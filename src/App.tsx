@@ -232,7 +232,7 @@ export default function App() {
       <main className="page">
         <header className="hero">
           <EyebrowPill icon={<StatusDot color="#4ade80" />}>
-            {stats[0].value}+ years · {tools.length} tools in the stack
+            {stats[0].value}+ years · {tools.length}+ tools in the stack
           </EyebrowPill>
 
           <h1 className="hero__name">{profile.name}</h1>
@@ -242,6 +242,10 @@ export default function App() {
           <p className="hero__meta">
             {profile.location} · {profile.email} · {profile.phone}
           </p>
+
+          {/* Summary sits above the actions, unboxed: it is the pitch, and a
+              card around it would compete with the stat strip below. */}
+          <p className="hero__summary">{profile.summary}</p>
 
           <div className="hero__cta">
             <a className="btn" href="#experience">
@@ -441,13 +445,6 @@ export default function App() {
                 <strong>{l.name}</strong> · {l.level}
               </p>
             ))}
-          </GlassCard>
-        </section>
-
-        <section className="section summary">
-          <GlassCard className="panel">
-            <h3>In short</h3>
-            <p>{profile.summary}</p>
           </GlassCard>
         </section>
       </main>

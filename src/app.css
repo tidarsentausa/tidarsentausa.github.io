@@ -630,9 +630,14 @@ body::before {
   font-size: 0.85rem !important;
 }
 
-.summary .panel p {
-  max-width: 80ch;
-  font-size: 0.95rem;
+/* The summary, promoted into the hero. Kept at a readable measure and a step
+   up from hero__meta, since it is the pitch rather than a detail line. */
+.hero__summary {
+  max-width: 72ch;
+  margin: 20px 0 0;
+  color: var(--ink);
+  font-size: 0.98rem;
+  line-height: 1.65;
 }
 
 /* ---------- engagement ---------- */
