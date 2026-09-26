@@ -278,17 +278,40 @@ export default function App() {
       </StickyBanner>
       <main className="page">
         <header className="hero">
-          <EyebrowPill icon={<StatusDot color="#4ade80" />}>
-            {stats[0].value}+ years · {tools.length}+ tools in the stack
-          </EyebrowPill>
+          {/* Portrait and identity sit in one row on wide screens. The photo is
+              self-hosted (not the GitHub avatar URL) so the page has no runtime
+              dependency on a third party, and it carries intrinsic dimensions
+              so the box is reserved before the bytes land. Eager, because it is
+              above the fold: deferring it would cost a visible pop on the one
+              element that introduces the page. */}
+          <div className="hero__top">
+            <figure className="portrait">
+              <img
+                className="portrait__img"
+                src="/tidar-avatar.jpg"
+                alt={`${profile.name}, headshot`}
+                width={460}
+                height={460}
+                loading="eager"
+                decoding="async"
+                fetchPriority="high"
+              />
+            </figure>
 
-          <h1 className="hero__name">{profile.name}</h1>
+            <div className="hero__id">
+              <EyebrowPill icon={<StatusDot color="#4ade80" />}>
+                {stats[0].value}+ years · {tools.length}+ tools in the stack
+              </EyebrowPill>
 
-          <p className="hero__roles">{profile.roles.join(" / ")}</p>
+              <h1 className="hero__name">{profile.name}</h1>
 
-          <p className="hero__meta">
-            {profile.location} · {profile.email} · {profile.phone}
-          </p>
+              <p className="hero__roles">{profile.roles.join(" / ")}</p>
+
+              <p className="hero__meta">
+                {profile.location} · {profile.email} · {profile.phone}
+              </p>
+            </div>
+          </div>
 
           {/* Summary sits above the actions, unboxed: it is the pitch, and a
               card around it would compete with the stat strip below. */}

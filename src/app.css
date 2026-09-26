@@ -116,6 +116,102 @@ body::before {
   font-size: 0.9rem;
 }
 
+/* ---------- portrait ---------- */
+
+/* Portrait and identity share the top row on wide screens, so the photo reads
+   as part of the name block rather than as a floating avatar bolted on.
+
+   The frame is sized in viewport terms and capped, so it stays a supporting
+   element: wide enough to be a face, small enough that the name keeps the
+   dominant voice. It is a fixed square rather than a percentage of the column,
+   because the source is a 1:1 crop and any other ratio would letterbox or
+   clip a face. flex-shrink is 0 so a narrow viewport can never squash it into
+   an ellipse — the row wraps first (see the 760px rule). */
+.hero__top {
+  display: flex;
+  align-items: flex-start;
+  gap: clamp(20px, 3vw, 36px);
+}
+
+.hero__id {
+  /* min-width: 0 so the name and meta can wrap inside the flex row instead of
+     forcing the whole row wider than the page. */
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.portrait {
+  flex: 0 0 auto;
+  width: clamp(120px, 20vw, 200px);
+  margin: 0;
+  border: 2px solid var(--line);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  transition:
+    transform 90ms ease,
+    box-shadow 90ms ease;
+}
+
+.portrait:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 8px 8px 0 var(--line);
+}
+
+/* Cover, not contain: the box is square and the photo is square, so this only
+   matters if a replacement image is a different shape. The focal point sits
+   left of centre in the source (the subject is off-axis with more negative
+   space on the right), so the object position is biased the same way to keep
+   the face centred if the frame ever does crop. */
+.portrait__img {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  object-position: 38% 28%;
+  /* The source is monochrome already; a touch of contrast keeps the subject
+     from washing out against the paper background. */
+  filter: contrast(1.05);
+}
+
+/* Below this the name needs the full measure: at 8vw the display face needs
+   roughly 340px to hold "TIDAR SENTAUSA" on one line, and it stops doing that
+   well before the photo would run out of room beside it. So the row becomes a
+   column, and the portrait centres over the block it now introduces. */
+@media (max-width: 760px) {
+  .hero__top {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 20px;
+  }
+
+  .portrait {
+    width: clamp(112px, 34vw, 168px);
+  }
+
+  .hero__id {
+    width: 100%;
+  }
+
+  /* The eyebrow pill is inline-flex, so it needs centring once the block it
+     sits in is centred. The global border-radius reset has already squared
+     it off. */
+  .hero__id .pui-eyebrow {
+    margin-inline: auto;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .portrait {
+    transition: none;
+  }
+
+  .portrait:hover {
+    transform: none;
+  }
+}
+
 .hero__cta {
   display: flex;
   gap: 12px;
