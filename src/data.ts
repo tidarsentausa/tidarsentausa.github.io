@@ -22,7 +22,7 @@ export const profile = {
 /** Headline numbers, each traceable to a bullet in the source resume. */
 export const stats = [
   { value: 10, suffix: "+", label: "Years in search" },
-  { value: 414, suffix: "%", label: "Visibility lift" },
+  { value: 2600, suffix: "K", label: "Impressions added" },
   { value: 1595, suffix: "%", label: "Click growth" },
   { value: 230, suffix: "K", label: "Monthly visits" },
 ] as const;
@@ -69,10 +69,11 @@ export const roles: Role[] = [
       "Corporate service provider specializing in FinTech, Web3, and cryptocurrency legal licensing, company formation, and regulatory structuring across global markets. Leading SEO strategy and execution to position LegalBison as the trusted authority in FinTech/crypto regulatory compliance and corporate services.",
     url: "https://legalbison.com",
     highlights: [
-      "Increased licensing/structuring page visibility by 414%, driving 1.2K monthly clicks and 15% impression uplift against a competitive query landscape",
-      "Improved average keyword rank by 6.7 positions, pushing high-intent compliance keywords onto page 1",
-      "Building topical authority around complex regulatory topics (VASP licensing, crypto exchange setup, Web3 company structuring) to attract qualified B2B leads",
-      "Optimizing organic funnel to convert search traffic into consultations for high-value corporate services",
+      "Scaled the organic content portfolio from 281 to 789 ranking pages - 515 new pages adding 5,900+ clicks and 2.6M impressions, expanding the ranked-keyword footprint 52% (22.7K to 34.5K queries)",
+      "More than doubled Top-3 keyword rankings (3.5K to 7.9K) and lifted average position ~7 spots (23.7 to 16.6), pushing high-intent compliance terms onto page 1",
+      "Built regulatory authority in zero-to-one niches - launched key FinTech licensing silos from scratch and grew the licensing hub +373% (318 to 1,504 clicks) across 21 jurisdictions",
+      "Delivered flagship, revenue-intent assets guide (1.3K clicks) and a country-driven page (740+ clicks), ranking #2 to #6 for commercial keywords",
+      "Reversed a 7-month organic decline, returning traffic to +29% QoQ by Q3 2026 while defending rankings against AI-Overviews CTR compression",
     ],
   },
   {
