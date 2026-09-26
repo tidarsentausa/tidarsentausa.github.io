@@ -867,12 +867,12 @@ body::before {
 /* Fixed height, and the overflow is hidden rather than auto. A fixed height
    with overflow-y: auto grew a scrollbar once the snippet passed the box.
 
-   740px is the measured height of the full 31-line snippet (722px) plus a
-   little headroom, so the window is constant from empty to full, nothing
-   scrolls, and no line is cut off. The page stops changing height as it
-   types. Recompute this if IDE_TOKENS grows or the font size changes. */
+   The snippet is split across two alternating screens, so this only has to
+   fit the taller one: IDE_SCREEN_2 at 16 lines needs about 387px, and 400px
+   leaves headroom. That is roughly half the 740px the single 31-line snippet
+   needed. Recompute if either screen grows or the font size changes. */
 .pui-ide__body {
-  height: 740px;
+  height: 400px;
   overflow: hidden;
 }
 

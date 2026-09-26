@@ -29,8 +29,12 @@ import {
    reads as general SEO/analytics tooling rather than one engagement's data.
 
    Token classes map to the library's palette: com (comment), key (keyword),
-   fn (function), str (string), and no class for plain identifiers. */
-const IDE_TOKENS: IdeToken[] = [
+   fn (function), str (string), and no class for plain identifiers.
+
+   The snippet is split into two screens so the window can be half as tall.
+   Screen one fetches and filters, screen two aggregates and prints; the split
+   falls on a blank line so neither screen starts or ends mid-statement. */
+const IDE_SCREEN_1: IdeToken[] = [
   { c: "// organic performance → rolling 12 months → by landing page\n", cls: "com" },
   { c: "type ", cls: "key" },
   { c: "QueryRow " },
@@ -65,8 +69,11 @@ const IDE_TOKENS: IdeToken[] = [
   { c: "QueryRow" },
   { c: ") => r.clicks > 0 && ", cls: "key" },
   { c: "r.position <= 20", cls: "fn" },
-  { c: ");\n\n", cls: "key" },
+  { c: ");\n", cls: "key" },
+];
 
+const IDE_SCREEN_2: IdeToken[] = [
+  { c: "// roll up the striking set, then print it\n", cls: "com" },
   { c: "const ", cls: "key" },
   { c: "summary" },
   { c: " = striking", cls: "key" },
@@ -134,6 +141,19 @@ const MARQUEE: MarqueeItem[] = tools.map((t) => {
 export default function App() {
   const [temp, setTemp] = useState("funnel");
   const [openRole, setOpenRole] = useState<string | null>(roles[0].company);
+  const [ideScreen, setIdeScreen] = useState(0);
+
+  /* Alternate the two IDE screens.
+
+     Each screen gets a React key, so switching remounts MockIDE.Body and the
+     snippet retypes from empty. MockIDE's own loop is turned off: left on, it
+     would restart the same screen forever and the second half would never
+     show. The interval is longer than a screen takes to type, so each screen
+     finishes its text before the swap. */
+  useEffect(() => {
+    const id = setInterval(() => setIdeScreen((n) => (n + 1) % 2), 11000);
+    return () => clearInterval(id);
+  }, []);
 
   /* Marquee items carry no label attribute and CSS attr() cannot read an img's
      alt text, so mirror each mark's alt onto its item for the hover label.
@@ -435,8 +455,10 @@ export default function App() {
       {/* Purely decorative, so it sits below the content and above the footer. */}
       <div className="workbench">
         <MockIDE
+          key={ideScreen}
           filename="organic-report.ts"
-          tokens={IDE_TOKENS}
+          tokens={ideScreen === 0 ? IDE_SCREEN_1 : IDE_SCREEN_2}
+          loop={false}
           charMs={[4, 14]}
           thinkingLabel="compiling query set…"
         />
