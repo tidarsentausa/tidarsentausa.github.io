@@ -837,12 +837,11 @@ body::before {
   overflow: hidden;
 }
 
-/* The trailing half is the one to lose first: the leading line is the
-   message. Both children are min-width:0 so they can shrink inside the flex
-   row instead of forcing the banner wider than the viewport, which is what
-   pushed the text off-screen on a phone. */
-.banner__leading,
-.banner__trailing {
+/* The leading run is the message, and it must be able to shrink rather than
+   push the banner wider than the viewport. min-width: 0 is what allows a
+   flex item to shrink below its content width; the ellipsis catches any
+   residual overflow on very narrow screens. */
+.banner__leading {
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -855,10 +854,6 @@ body::before {
     font-size: 0.66rem;
     letter-spacing: 0.02em;
     justify-content: flex-start;
-  }
-
-  .banner__trailing {
-    display: none;
   }
 }
 

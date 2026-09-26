@@ -226,18 +226,12 @@ export default function App() {
 
   return (
     <>
-      {/* Trailing copy is a real element rather than a bare string, so the
-          narrow-screen rule can drop it. As a text node it could not be
-          selected, which is what previously clipped the banner off-screen. */}
-      <StickyBanner
-        trailing={
-          <span className="banner__trailing">
-            Based in Kuala Lumpur, open to remote
-          </span>
-        }
-      >
+      {/* Single message: the copy states the location, so a trailing
+          "based in Kuala Lumpur" would just repeat it. Kept in the leading
+          span because the narrow-screen rule targets banner__trailing. */}
+      <StickyBanner trailing={null}>
         <span className="banner__leading">
-          Currently leading SEO at LegalBison
+          Kuala Lumpur-based SEO Manager
         </span>
       </StickyBanner>
       <main className="page">
