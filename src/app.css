@@ -1039,24 +1039,19 @@ body::before {
 }
 
 /* The library injects a decorative sparkle span (pui-sparkle--blink) as the
-   first child, before the message. Centring the flex ROW therefore centres
-   the sparkle AND the text together, which leaves the text itself sitting
-   right of true centre by half the sparkle's width plus the gap: a constant
-   17px at the default size, measured at every viewport width.
+   first child, before the message. It is removed rather than repositioned.
 
-   The text is the only thing that should be centred, so the sparkle is taken
-   out of flow entirely. absolute positioning removes it from the flex layout,
-   so justify-content centres the message alone and the offset disappears.
-   It stays visible because it is positioned inside the strip rather than
-   hidden; only its claim on layout space is dropped. */
+   Two reasons it had to be dealt with at all: it occupies a flex slot, so
+   centring the row centred the sparkle and the text together and left the
+   text a constant 17px right of true centre at every width; and it blinks on
+   a 2.4s cycle, which is motion on a strip that is otherwise completely
+   static. Hiding it outright satisfies both, and the centring stays exact
+   because the row now holds nothing but the message.
+
+   display: none rather than visibility: hidden, so the element leaves the
+   layout entirely instead of reserving a slot with no paint. */
 .pui-sparkle {
-  position: absolute;
-  /* Anchored to the left padding edge so it reads as a leading mark without
-     participating in the centring maths. */
-  left: 16px;
-  top: 50%;
-  transform: translateY(-50%);
-  pointer-events: none;
+  display: none;
 }
 
 /* The leading run is the message, and it must be able to shrink rather than
