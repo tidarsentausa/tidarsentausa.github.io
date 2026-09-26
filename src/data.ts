@@ -2,7 +2,9 @@ export interface Role {
   company: string;
   title: string;
   period: string;
-  /** Optional desk/market location, where the source resume names one. */
+  /** Desk/market location. Every role carries one, so this is effectively
+      required; it is optional in the type only so a future entry can omit it
+      rather than have to invent a city. */
   location?: string;
   blurb: string;
   url?: string;
@@ -66,6 +68,7 @@ export const roles: Role[] = [
     company: "LegalBison.com",
     title: "Search Engine Optimization Manager",
     period: "Dec 2025 - Present",
+    location: "Kuala Lumpur, Malaysia",
     blurb:
       "Corporate service provider specializing in FinTech, Web3, and cryptocurrency legal licensing, company formation, and regulatory structuring across global markets. Leading SEO strategy and execution to position LegalBison as the trusted authority in FinTech/crypto regulatory compliance and corporate services.",
     url: "https://legalbison.com",
@@ -82,6 +85,7 @@ export const roles: Role[] = [
     company: "Self-Employed",
     title: "SEO Strategy Consultant (Freelance)",
     period: "Jan 2025 - Present",
+    location: "Jakarta, Indonesia",
     blurb:
       "Expand brand presence from branded terms to high-intent generic keywords in competitive lifestyle market.",
     highlights: [
@@ -96,6 +100,7 @@ export const roles: Role[] = [
     company: "Samsung Indonesia",
     title: "B2B Digital Project Manager",
     period: "Jan 2024 - Dec 2024",
+    location: "Jakarta, Indonesia",
     blurb:
       "Full-scope digital marketing management for Samsung B2B division across website, social media, KOL, OOH, and Salesforce leads.",
     highlights: [
@@ -125,6 +130,7 @@ export const roles: Role[] = [
     company: "AMAAN Indonesia",
     title: "Web & App Content Specialist",
     period: "Dec 2020 - Dec 2021",
+    location: "Jakarta, Indonesia",
     blurb:
       "Sharia digital platform empowering female micro-entrepreneurs across six Indonesian provinces.",
     url: "https://amaan.co.id",
@@ -138,6 +144,7 @@ export const roles: Role[] = [
     company: "Chilibeli",
     title: "SEO Content Marketing Specialist",
     period: "Dec 2019 - Dec 2020",
+    location: "Jakarta, Indonesia",
     blurb:
       "Build organic presence for social commerce startup from zero domain rating in competitive grocery market.",
     url: "https://chilibeli.id",
@@ -152,6 +159,7 @@ export const roles: Role[] = [
     company: "BukaReview by Bukalapak",
     title: "SEO Content Writer",
     period: "Jan 2017 - Dec 2019",
+    location: "Jakarta, Indonesia",
     blurb:
       "Lifestyle blog content management across diverse categories (gadgets, fashion, finance, travel).",
     url: "https://review.bukalapak.com",
