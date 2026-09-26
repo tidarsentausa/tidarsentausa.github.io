@@ -1183,10 +1183,31 @@ body::before {
   padding: 72px 24px 72px;
 }
 
-/* True edge-to-edge wordmark. The footer is a full-width block, so break out
-   of the page container and let the name span the whole viewport, clipped at
-   both edges. font-size is tuned so the string slightly overflows, which is
-   what makes it read as a bleed rather than a centered caption. */
+/* Two lines, flush left.
+
+   One line per pseudo-element rather than a newline inside a single value: a
+   literal line break in a CSS string is a syntax error, so the declaration
+   would be dropped and the mark would render empty. The \\A escape parses but
+   paints literal characters. Two properties, two pseudo-elements, no
+   whitespace trickery.
+
+   ::after is display:block to force the second line onto its own row; inline
+   pseudo-elements would otherwise sit side by side on one line.
+
+   Left-aligned rather than centred, so the offset hack that centred a
+   full-bleed single line (margin-left: 50% plus translateX(-50%)) is gone.
+   The wordmark is still a 100vw breakout, so the name can still run past the
+   right edge and read as a bleed, but it now starts hard against the left.
+
+   font-size is larger than the old 18.5vw because each line is now roughly
+   half as long: at 18.5vw a single word would occupy well under half the
+   viewport and the mark would read as small print. 27vw puts the longer word
+   ("SENTAUSA", 8 glyphs) at roughly the width of the old full name, so the
+   two-line block carries the same visual mass as the one-line version did.
+
+   line-height is 0.84, tightened from 0.82 because two lines stack their
+   leading twice; at the looser value the pair opens a visible gap and stops
+   reading as one block. */
 .pui-bigback__wordmark {
   display: block;
   margin: 28px 0 8px;
@@ -1196,19 +1217,27 @@ body::before {
   overflow: hidden;
 }
 
-.pui-bigback__wordmark::before {
-  content: var(--wm, "");
+.pui-bigback__wordmark::before,
+.pui-bigback__wordmark::after {
   display: block;
   width: 100%;
   font-family: var(--mono-display);
-  font-size: 18.5vw;
+  font-size: 27vw;
   font-weight: 700;
-  line-height: 0.82;
+  line-height: 0.84;
   letter-spacing: -0.055em;
   text-transform: uppercase;
-  text-align: center;
+  text-align: left;
   white-space: nowrap;
   opacity: 0.15;
+}
+
+.pui-bigback__wordmark::before {
+  content: var(--wm-1, "");
+}
+
+.pui-bigback__wordmark::after {
+  content: var(--wm-2, "");
 }
 
 /* Nav columns and the baseline row both centered. */
@@ -1256,14 +1285,25 @@ body::before {
   border-bottom-color: var(--accent);
 }
 
-.pui-bigback__base {
-  justify-content: center;
-  text-align: center;
-  font-family: var(--mono-body);
-  font-size: 0.75rem;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--muted);
+/* The baseline row is removed entirely.
+
+   BigBack renders <span class="pui-bigback__copyright"> unconditionally — it
+   is not behind a conditional — so the only ways to drop it are an empty prop
+   or hiding the row. Hiding the row is the better of the two: passing
+   copyright="" leaves an empty flex row still carrying its border-top and
+   padding, which reads as a stray rule under the wordmark.
+
+   This is scoped to the copyright span rather than the whole row, so the row
+   would survive if social links were ever passed. Nothing else uses it today,
+   so in practice the row goes too. */
+.pui-bigback__copyright {
+  display: none;
+}
+
+/* With its only child gone the row has no content, so it must not keep its
+   top border or vertical padding either. */
+.pui-bigback__base:not(:has(.pui-bigback__social)) {
+  display: none;
 }
 
 .pui-bigback__social {

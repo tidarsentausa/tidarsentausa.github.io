@@ -594,7 +594,23 @@ export default function App() {
           <BigBack
             company={profile.name}
             columns={columns}
-            style={{ "--wm": `"${profile.name}"` } as CSSProperties}
+            /* Two custom properties, one per line.
+
+               A newline inside the value was the obvious route and it silently
+               fails: a literal line break inside a CSS string is a syntax
+               error, so the declaration is dropped and --wm computes to
+               nothing, leaving an empty wordmark. The \\A escape survives
+               parsing but renders as literal characters, not a break.
+
+               So the two lines are kept as separate properties and the CSS
+               paints one per pseudo-element. Splitting on the first space
+               only, so a three-part name keeps its tail intact on line two. */
+            style={
+              {
+                "--wm-1": `"${profile.name.split(" ")[0]}"`,
+                "--wm-2": `"${profile.name.split(" ").slice(1).join(" ")}"`,
+              } as CSSProperties
+            }
           />
         </div>
       </div>
