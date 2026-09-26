@@ -23,30 +23,77 @@ import {
   tools,
 } from "./data";
 
-/* A little of the workbench, rendered as if it were about to ship. */
+/* A little of the workbench, rendered as if it were about to ship.
+
+   Token classes map to the library's palette: com (comment), key (keyword),
+   fn (function), str (string), and no class for plain identifiers. */
 const IDE_TOKENS: IdeToken[] = [
-  { c: "// search-console → organic → last 12 months\n", cls: "com" },
+  { c: "// organic performance → rolling 12 months → by jurisdiction\n", cls: "com" },
+  { c: "type ", cls: "key" },
+  { c: "Jurisdiction " },
+  { c: "= ", cls: "key" },
+  { c: '"VASP | MiCA | FinTech licensing"', cls: "str" },
+  { c: ";\n\n", cls: "str" },
+
   { c: "const ", cls: "key" },
-  { c: "traffic" },
+  { c: "report" },
   { c: " = await ", cls: "key" },
   { c: "gsc" },
   { c: ".query", cls: "fn" },
   { c: "({\n  site: ", cls: "str" },
-  { c: '"samsung.com/id"' },
-  { c: ",\n  window: ", cls: "str" },
+  { c: '"legalbison.com"' },
+  { c: ',\n  window: ', cls: "str" },
   { c: '"12m"' },
+  { c: ',\n  dimensions: ', cls: "str" },
+  { c: '["query", "clicks", "impressions", "position"]' },
   { c: ",\n});\n\n", cls: "str" },
-  { c: "traffic" },
-  { c: ".trend", cls: "fn" },
-  { c: ".forEach", cls: "fn" },
-  { c: "(", cls: "key" },
-  { c: "point" },
-  { c: ") => {\n  ", cls: "key" },
+
+  { c: "const ", cls: "key" },
+  { c: "licensing" },
+  { c: " = report", cls: "key" },
+  { c: ".rows", cls: "fn" },
+  { c: ".filter", cls: "fn" },
+  { c: "((r: ", cls: "key" },
+  { c: "Row" },
+  { c: ") => r.clicks > 0 && ", cls: "key" },
+  { c: "r.position <= 20", cls: "fn" },
+  { c: ");\n\n", cls: "key" },
+
+  { c: "const ", cls: "key" },
+  { c: "summary" },
+  { c: " = licensing", cls: "key" },
+  { c: ".reduce", cls: "fn" },
+  { c: "((acc, r) => ({\n  pages: ", cls: "key" },
+  { c: "acc.pages + 1" },
+  { c: ",\n  clicks: ", cls: "key" },
+  { c: "acc.clicks + r.clicks" },
+  { c: ",\n  top3: ", cls: "key" },
+  { c: "acc.top3 + Number(r.position <= 3)" },
+  { c: ",\n}), { pages: ", cls: "key" },
+  { c: "0" },
+  { c: ", clicks: ", cls: "key" },
+  { c: "0" },
+  { c: ", top3: ", cls: "key" },
+  { c: "0" },
+  { c: " });\n\n", cls: "key" },
+
   { c: "console" },
-  { c: ".info", cls: "fn" },
-  { c: "(" },
-  { c: "point" },
-  { c: ");\n});\n", cls: "fn" },
+  { c: ".table", cls: "fn" },
+  { c: "(\n  " },
+  { c: "licensingHub" },
+  { c: ": ", cls: "key" },
+  { c: "summary" },
+  { c: ".pages" },
+  { c: ",\n  clicks: ", cls: "key" },
+  { c: "summary" },
+  { c: ".clicks" },
+  { c: ",\n  top3: ", cls: "key" },
+  { c: "summary" },
+  { c: ".top3" },
+  { c: ",\n" },
+  { c: "growth: ", cls: "key" },
+  { c: '"+373% QoQ"' },
+  { c: ",\n});\n", cls: "key" },
 ];
 
 /* Real marks where they exist. simple-icons are monochrome by nature, so no
@@ -351,7 +398,12 @@ export default function App() {
 
       {/* Purely decorative, so it sits below the content and above the footer. */}
       <div className="workbench">
-        <MockIDE filename="organic-growth.ts" tokens={IDE_TOKENS} charMs={[10, 30]} />
+        <MockIDE
+          filename="organic-report.ts"
+          tokens={IDE_TOKENS}
+          charMs={[4, 14]}
+          thinkingLabel="compiling query set…"
+        />
       </div>
 
       <BigBack

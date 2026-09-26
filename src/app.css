@@ -54,6 +54,15 @@ body * {
   border-radius: 0 !important;
 }
 
+/* Round loaders are the one exception: a spinning square reads as a rendering
+   glitch rather than progress, so the spinners keep their circle. */
+.pui-spinner,
+.pui-spinner--sm,
+.pui-dot,
+[class*="pui-dot"] {
+  border-radius: 50% !important;
+}
+
 /* A faint grid, so the page reads as graph paper. */
 body::before {
   content: "";
