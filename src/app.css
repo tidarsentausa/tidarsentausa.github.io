@@ -352,6 +352,13 @@ body::before {
   gap: 2px;
   border: 2px solid var(--line);
   background: var(--line);
+  /* The same hard offset as .portrait and the role cards, so the hero reads
+     as one lifted system rather than the stats and logo band being the only
+     flat things on the page. Zero blur, 6px down-right: the shadow is a
+     duplicate of the box, not a glow. Both strips are 1120px inside a 1168px
+     page, leaving 73px to the right, so a 6px offset cannot reach the
+     viewport edge and cause horizontal overflow. */
+  box-shadow: var(--shadow);
 }
 
 @media (max-width: 900px) {
@@ -436,6 +443,9 @@ body::before {
      above it, which is already a full box, so the two stack without a seam. */
   border: 2px solid var(--line);
   background: var(--surface);
+  /* Matching the stats strip directly above, so the two bands read as a pair
+     of stacked slabs rather than one lifted and one flat. */
+  box-shadow: var(--shadow);
 }
 
 .logos img,
