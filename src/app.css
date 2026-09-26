@@ -1197,33 +1197,67 @@ body::before {
   --pui-fg: var(--ink);
 }
 
-/* The reveal is a single line of query text spanning the full width, so its
-   length caps how much of it can be legible at once. The size is chosen
-   against the size of the lens window rather than the viewport:
+/* Both layers share one headline size, which is the point of a magnifier: the
+   same type at the same size swapping content under the lens, rather than the
+   name being a headline and the reveal a caption.
 
-   At 2.6vw a chord across the middle of a 460px window shows 24 characters —
-   a whole term, "seo · digital marketing" — where the previous 4.05vw showed
-   only "seo · digita". The clamp's 13px floor is what makes that survive on a
-   phone: a flat 2.6vw measures 8.3px at a 320px viewport, which is not
-   readable at any size of window. The 37px ceiling stops it ballooning on a
-   wide desktop.
+   That fixes the size at what the REVEAL needs, since it is the longer string
+   (40 characters against the name's 13) on a nowrap line spanning the full
+   width. Space Mono advances 0.6em, so 40 characters is 24em, and fitting
+   that to the viewport needs 4vw exactly; letter-spacing: -0.02em buys back
+   enough to keep that figure. The 13px floor is what makes it survive on a
+   phone, where 4vw measures 12.8px. The 52px ceiling stops it shrinking to a
+   footnote on a wide desktop.
 
-   The base and the scope share one --pui-goldeneye-headline-size by default,
-so the scope's headline is sized down separately here. */
-.footer__lens .pui-goldeneye__scope .pui-goldeneye__headline {
-  font-size: clamp(13px, 2.6vw, 37px);
+   The scope's headline is NOT sized separately any more — that override was
+   the thing making the two layers visibly different. */
+.footer__lens {
+  --pui-goldeneye-headline-size: clamp(13px, 4vw, 52px);
+}
+
+/* All caps on both layers. Set in CSS rather than by rewriting the strings, so
+   data.ts keeps the queries readable as typed and the capitals are a
+   presentation decision that stays in one place. */
+.footer__lens .pui-goldeneye__headline {
+  text-transform: uppercase;
   letter-spacing: -0.02em;
   padding: 0;
 }
 
-/* The binary pattern is decorative texture behind the type. The library's
-   0.32 opacity is too strong over a light paper background — it competes with
-   the name — so it is dropped, and given a wider tracking so the digits read
-   as a field rather than as a row of figures to be decoded. */
+/* The reveal disc is orange, not ink.
+
+   The library inverts the scope to --pui-fg (a near-black slab) over
+   --pui-bg text. On this page that black was the loudest thing in the footer
+   and read as a hole rather than as a lens, so the disc takes the page's
+   accent instead. --accent is #ff4f18, and the text goes to ink on top of it
+   rather than staying paper: paper on orange measures 2.9:1, which is not
+   readable, while ink on orange measures 5.7:1. The disc is decoration but
+   the reveal is the content, so the content gets the legible pairing. */
+.footer__lens .pui-goldeneye__scope {
+  background: var(--accent);
+  color: var(--ink);
+}
+
+/* The binary pattern.
+
+   Two different treatments, because the two layers have opposite jobs. In the
+   base it is background texture behind the name and stays very faint — the
+   library's 0.32 is far too strong over a light paper background and competes
+   with the type.
+
+   In the scope it is the thing that makes the lens read as a magnifier, so it
+   has to be clearly visible, and it inverts: paper on the orange disc, the
+   opposite of the base layer's ink on paper. The one 0.09 value applied to
+   both is why the digits disappeared inside the reveal. */
 .footer__lens .pui-goldeneye__pattern {
   opacity: 0.09;
   letter-spacing: 1.1em;
   color: var(--ink);
+}
+
+.footer__lens .pui-goldeneye__scope .pui-goldeneye__pattern {
+  opacity: 0.3;
+  color: var(--paper);
 }
 
 /* The last section sits above the IDE window, whose own container supplies
