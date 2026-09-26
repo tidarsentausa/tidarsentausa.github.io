@@ -5,7 +5,7 @@
    numeric stats, so the page has typographic hierarchy without leaving the
    monospace register. */
 
-@import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Space+Mono:wght@400;700&family=JetBrains+Mono:wght@400;700;800&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Instrument+Serif:ital@0;1&family=Space+Mono:wght@400;700&family=JetBrains+Mono:wght@400;700;800&display=swap");
 
 :root {
   --ink: #14141a;
@@ -1338,27 +1338,46 @@ body::before {
    this, not before. */
 .footer__lens .pui-goldeneye__headline {
   text-transform: uppercase;
-  /* A small optical nudge down.
+  /* Instrument Serif is a single-weight family: 400 regular, plus italics.
+     The library asks for 900, and with no 900 in the family the browser
+     SYNTHESISES a bold by smearing the outlines — which on a high-contrast
+     display serif closes up the thin strokes and turns the letterforms
+     blotchy. 400 is the real weight, so the caps render as drawn.
 
-     Worth recording that the type MEASURES as already centred: with the disc
-     parked away from the word, the glyph ink runs 5451..5548 in a band of
-     5435..5565, so 16px of clearance above and 17px below, and the per-row ink
-     profile is symmetric about its midpoint (peaks at 5453 and 5543, equidistant
-     from 5498). Canvas metrics agree the line box is centred to within 1px.
+     This is the one place the headline stops being the library's own
+     styling, and it is a correction rather than an override: the library
+     cannot know which family it will be pointed at, and 900 is right for
+     the sans it defaults to. */
+  font-weight: 400;
+  /* An optical nudge down, sized for INSTRUMENT SERIF's metrics rather than
+     Georgia's.
 
-     So this is not correcting a measured error — it is applying the requested
-     adjustment, kept small on purpose. 6px is about 4% of the 137.72px em and
-     3% of the band's height: enough to see, not enough to make the word look
-     like it is falling out of the band. The reveal inside the disc gets the
-     same nudge, so the two layers stay registered to each other and the swap
-     still reads as one image changing rather than two layers drifting apart.
+     This was originally calibrated against Georgia, because the footer was
+     silently rendering in Georgia: the library names Instrument Serif but
+     ships no @font-face and no font binaries, and our Google Fonts import did
+     not ask for it, so every "serif" measurement taken until now was
+     Georgia's. Georgia's caps put the ink centre 14.5px BELOW the line
+     centre; real Instrument Serif caps put it 3px ABOVE. The two disagree on
+     which direction the correction goes, so the number had to be re-derived.
+
+     3px matches the font's own offset, which lands the word optically
+     centred rather than merely nudged: at 6px it measured 15px of clearance
+     above and 17px below, so 3px puts it within a pixel of even.
+
+     Worth recording that the type measures as already centred either way.
+     With the disc parked away from the word so it cannot contaminate the
+     reading, the glyph ink ran 5451..5548 in a band of 5435..5565 - 16px of
+     clearance above and 17px below - and the per-row ink profile was symmetric
+     about its midpoint, peaking at 5453 and 5543, equidistant from 5498. The
+     disc was not the cause either: lens and footer share a centre of 442,
+     offset zero.
 
      `top` is safe to move because the library insets the headline with
      top/right/bottom/left: 0 and centres the text with flex. Overriding `top`
      shifts the whole box down within the lens; the text stays centred inside
      that box, so the nudge is uniform rather than shifting the glyphs relative
      to their own line box. */
-  top: 6px;
+  top: 3px;
 }
 
 /* The headline typeface.
@@ -1368,6 +1387,22 @@ body::before {
    pointing --pui-goldeneye-font at --pui-font-serif is the library's own serif
    variant — not a hardcoded family list, and not the fontFamily prop, which
    was overriding the variable and pinning Space Mono here.
+
+   NAMING THE FONT IS NOT THE SAME AS LOADING IT, and that distinction cost
+   two commits. The library declares "Instrument Serif" but ships no @font-face
+   and no font binaries — `grep -c @font-face` on its stylesheet returns 0 —
+   so the name resolves to nothing on its own. Our own Google Fonts import
+   asked for IBM Plex Mono, Space Mono and JetBrains Mono and not this one, so
+   the browser fell through the stack to Georgia. getComputedStyle reported
+   `"Instrument Serif", ui-serif, Georgia, serif` the whole time, which reads
+   like confirmation and is not: it reports the DECLARED stack, never which
+   family actually won.
+
+   The tell is document.fonts, which listed every Instrument Serif face as
+   "unloaded", and a width comparison — "RESUME" measures 299.9px in
+   Instrument Serif against 425.3px in Georgia at the same size, so those are
+   not the same glyphs. Instrument Serif is now in the @import at the top of
+   this file, and document.fonts reports the normal 400 face as "loaded".
 
    This is the one thing still set on the component, because the serif is the
    point of the change. Everything else below is left at the library's
