@@ -269,6 +269,10 @@ body::before {
   position: fixed;
   right: 24px;
   bottom: 24px;
+  /* Above the lens disc, which now bleeds past the footer's edges and so
+     reaches up behind this fixed button at every width tested. z-index 40
+     already beat the lens's 0, so the click was never actually blocked —
+     see the scrollToTop comment for what was really wrong. */
   z-index: 40;
   display: flex;
   align-items: center;
@@ -1158,11 +1162,32 @@ body::before {
    The lens is NOT pointer-events: none, unlike the canvas it replaced: it has
    to receive pointermove to move the scope. With nothing layered above it
    now, the whole box is live. */
+/* The top border, drawn as a pseudo-element rather than as a real border.
+
+   A border paints in the footer's own background layer, which is BELOW any
+   positioned descendant — and the lens is `position: absolute` with the disc
+   now bleeding past the footer's edges. So a real border-top was still
+   computed (verified 3px solid) but was painted over by the disc wherever the
+   two met, which is most of the line: the border was there and invisible.
+
+   A pseudo-element with a z-index above the lens puts the rule back on top
+   without moving the footer's edge, so the box the disc is measured against is
+   unchanged. */
+.footer::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 3px;
+  background: var(--line);
+  /* Above .footer__lens (z-index 0) but below nothing else in the footer. */
+  z-index: 1;
+  pointer-events: none;
+}
+
 .footer {
   position: relative;
   isolation: isolate;
   background: var(--paper);
-  border-top: 3px solid var(--line);
   /* The footer's height, named once so the type inside it can be derived from
      it. A vh-based font size alone drifts out of step with this clamp: at
      320x568 the box sits on its 130px floor while 1.26vh measures only 7px,
@@ -1176,14 +1201,19 @@ body::before {
      Without this the footer is content-box and any padding here would push
      the page half again as long.
 
-     The padding is what makes a disc larger than the box possible at all. A
-     circle centred in a 130px band cannot exceed 130px, so the only way to
-     grow it is to let it overlap the footer's own edges — upward into the
-     workbench's bottom padding, downward into the page's. The workbench
-     leaves 72px there, and the disc's overflow is visible, so the circle
-     passes over the border and the paper rather than being cut at it. */
+     Padding is 0. It was horizontal, at half the bleed, to keep the disc off
+     the viewport's left and right edges — but the disc is centred and only
+     grows vertically, so the horizontal padding did nothing for it while
+     insetting the lens by 28px a side. That inset is what kept the queries
+     from reaching the page edges, and the queries are supposed to span the
+     full width.
+
+     The disc does reach the footer's own edges above and below, which is where
+     the bleed matters: the workbench leaves 72px of bottom padding above the
+     footer, and the disc's overflow is visible, so the circle passes over the
+     border and the paper rather than being cut at it. */
   box-sizing: border-box;
-  padding: 0 calc(var(--lens-bleed) / 2);
+  padding: 0;
   height: var(--footer-h);
 }
 
@@ -1246,9 +1276,9 @@ body::before {
    bind at opposite ends of the range and neither alone works:
 
    WIDTH binds on phones. The queries are 40 characters on a nowrap line, and
-   Space Mono advances 0.6em, so they are 24em wide. That admits 4vw and
-   nothing more — at 320px the largest possible size is 12.8px, and sizing to
-   the footer instead produced 44px of type overflowing a 320px viewport.
+   Space Mono advances 0.6em, so they are 24em wide. Spanning the viewport
+   exactly therefore means 100/24 = 4.167vw, and 4vw lands a few percent short
+   — measured 92% to 96% of the width, visibly short of both edges.
 
    HEIGHT binds on desktop, where there is width to spare and the box becomes
    the limit. Space Mono's cap height is about 0.7em, so 71cqh leaves the line
@@ -1262,15 +1292,32 @@ body::before {
 }
 
 .footer__lens {
-  --pui-goldeneye-headline-size: clamp(13px, min(4vw, 71cqh), 56px);
+  /* 4.167vw is the exact width-binding size (100 / 24em) but it OVERSHOOTS by
+     about 2%: measured 102% of the viewport with the line starting 11-15px
+     left of zero. The string is 40 characters including two spaces and two
+     middots, and the middots are narrower than Space Mono's uniform 0.6em
+     advance, so the arithmetic over-predicts the real width. 4.1vw lands the
+     line on the viewport edge at every width measured without crossing it.
+
+     The 56px ceiling is what stops this being full width on a wide desktop,
+     where 4.1vw would be 79px and the queries would be taller than the footer
+     they sit in. Height has to win there; a line that spans the width but
+     overflows the band is not a better result than one that fits. */
+  --pui-goldeneye-headline-size: clamp(13px, min(4.1vw, 71cqh), 56px);
 }
 
 /* All caps on both layers. Set in CSS rather than by rewriting the strings, so
    data.ts keeps the queries readable as typed and the capitals are a
-   presentation decision that stays in one place. */
+   presentation decision that stays in one place.
+
+   letter-spacing is 0, not the -0.02em it used to be. Negative tracking
+   shrinks the line, and the line is what has to span the full width: at
+   -0.02em the queries measured 92-96% of the viewport and stopped short of
+   both edges. Space Mono's own 0.6em advance is already tight enough that the
+   text butts against the margins, which is the intent. */
 .footer__lens .pui-goldeneye__headline {
   text-transform: uppercase;
-  letter-spacing: -0.02em;
+  letter-spacing: 0;
   padding: 0;
 }
 

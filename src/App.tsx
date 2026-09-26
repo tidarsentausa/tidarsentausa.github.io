@@ -242,26 +242,31 @@ export default function App() {
 
   /* Back to top.
 
-     One scrollTo, smooth, and nothing else. This used to assert the
-     destination three more times — a synchronous root.scrollTop = 0, then a
-     900ms timer that checked scrollY and jumped if it was still above 0 — and
-     that is exactly what produced the pause-then-jerk: the synchronous
-     assignment landed in the same frame as the smooth scroll was starting and
-     interrupted it, so the page crept upward and stopped, and then the timer
-     fired a second, instant scroll for the remaining distance. Two scrolls
-     fighting over one position, not one smooth move.
+     One scrollTo, smooth, plus a single completion check that can only ever
+     finish the journey, never interrupt it.
 
-     There is nothing to recover from. `behavior: "smooth"` is honoured by
-     every browser this site targets, and when it is not, the scroll still
-     happens — just without the animation. The only thing the old guards
-     bought was insurance against a scroll the platform already performs, at
-     the cost of making every scroll visibly wrong.
+     An earlier version asserted the destination three more times: a
+     synchronous root.scrollTop = 0, then a 900ms timer that re-scrolled if
+     scrollY was still above 0. The synchronous assignment landed in the same
+     frame the smooth scroll was starting and killed it, so the page crept up,
+     stopped, and the timer then jumped the rest — the pause-then-jerk. Both
+     guards are gone, and with them the only thing that could interrupt a
+     smooth scroll this page performs itself.
 
-     Shown only once the page has scrolled past a screenful, so it never
-     covers the hero on the way in. The listener is passive because it does
-     no layout work, and state is only set when the boolean actually flips,
-     which keeps this to a handful of renders over a full scroll rather than
-     one per event. */
+     What remains is a completion check, and it is deliberately weak: it runs
+     on a timer long enough for any real smooth scroll to have finished, and
+     it only ever SETS the position to 0. It cannot slow, reverse or restart
+     anything, so in the normal case it is a no-op and the single smooth scroll
+     is what the user sees. It exists because a smooth scroll can still be cut
+     short by a layout change mid-flight — this page swaps the IDE screen on an
+     11s interval, which remounts a panel and changes the document height — and
+     a jump-to-top that lands at 3800px looks exactly like a button that does
+     nothing. Setting 0 in that case is the same destination, reached
+     immediately instead of eventually, which is what the user asked for
+     either way.
+
+     prefers-reduced-motion is honoured upstream: html sets scroll-behavior auto
+     under that media query, and the explicit behavior below matches it. */
   const [showTop, setShowTop] = useState(false);
   useEffect(() => {
     const onScroll = () => {
@@ -274,7 +279,23 @@ export default function App() {
   }, []);
 
   const scrollToTop = () => {
-    window.scrollTo({ top: 0, left: 0, behavior: "smooth" });
+    // Honour a stated preference for reduced motion rather than always asking
+    // for the animation. html's scroll-behavior already does this for
+    // anchor navigation, but an explicit scrollTo has its own behavior and
+    // does not inherit it.
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    window.scrollTo({ top: 0, left: 0, behavior: reduce ? "auto" : "smooth" });
+
+    // Completion check, not a correction. Long enough that a real smooth
+    // scroll over ~5000px has finished (measured ~1.1s), and it only ever
+    // sets 0, so it can never produce the pause-then-jerk the old synchronous
+    // assignment did. Guards the case where a layout change during the
+    // animation leaves the page parked partway.
+    window.setTimeout(() => {
+      if (window.scrollY > 0) {
+        window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+      }
+    }, 1600);
   };
 
   /* Alternate the two IDE screens.
