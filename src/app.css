@@ -460,6 +460,12 @@ body::before {
   font-size: 0.88rem;
 }
 
+/* Market/desk location, where the source resume names one. */
+.role__location {
+  color: var(--accent-2);
+  font-weight: 700;
+}
+
 .role__period {
   flex-shrink: 0;
   padding: 2px 8px;
@@ -523,6 +529,19 @@ body::before {
   font-weight: 700;
   text-decoration: none;
   border-bottom: 2px solid currentColor;
+}
+
+/* Supporting bullets on a longer project case study. */
+.project__bullets {
+  margin: 12px 0 0;
+  padding-left: 18px;
+  color: var(--muted);
+  font-size: 0.85rem;
+  line-height: 1.6;
+}
+
+.project__bullets li {
+  margin-bottom: 5px;
 }
 
 /* ---------- projects and panels ---------- */
@@ -786,13 +805,28 @@ body::before {
   letter-spacing: 0.06em;
 }
 
-/* MockIDE: keep the code, lose the rounded glass. */
+/* MockIDE: keep the code, lose the rounded glass.
+
+   The body is pinned to a fixed height so the card does not grow and stretch
+   the page as the snippet types out line by line. The pre is the scroll
+   container: once the typed text passes the visible height it scrolls inside
+   the card instead of pushing the layout down. The last line is the console
+   output, so it is the one that gets clipped rather than the setup at the top.
+
+   The drop shadow is bright orange rather than the usual ink, to separate the
+   dark editor window from the dark footer wordmark behind it. */
 [class*="pui-mockide"],
 [class*="pui-ide"] {
   border-radius: 0 !important;
   border: 2px solid var(--line) !important;
-  box-shadow: var(--shadow) !important;
+  box-shadow: 8px 8px 0 var(--accent) !important;
   font-family: inherit;
+}
+
+.workbench .pui-ide__body {
+  height: 340px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
 }
 
 /* BigBack's wordmark is an SVG using textLength + spacingAndGlyphs, which

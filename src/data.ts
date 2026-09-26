@@ -2,6 +2,8 @@ export interface Role {
   company: string;
   title: string;
   period: string;
+  /** Optional desk/market location, where the source resume names one. */
+  location?: string;
   blurb: string;
   url?: string;
   highlights: string[];
@@ -69,6 +71,7 @@ export const roles: Role[] = [
       "Corporate service provider specializing in FinTech, Web3, and cryptocurrency legal licensing, company formation, and regulatory structuring across global markets. Leading SEO strategy and execution to position LegalBison as the trusted authority in FinTech/crypto regulatory compliance and corporate services.",
     url: "https://legalbison.com",
     highlights: [
+      "Prototype AI/automation tooling (LLM + agent workflows) to speed up GSC analysis, reporting, and content ops",
       "Scaled the organic content portfolio from 281 to 789 ranking pages - 515 new pages adding 5,900+ clicks and 2.6M impressions, expanding the ranked-keyword footprint 52% (22.7K to 34.5K queries)",
       "More than doubled Top-3 keyword rankings (3.5K to 7.9K) and lifted average position ~7 spots (23.7 to 16.6), pushing high-intent compliance terms onto page 1",
       "Built regulatory authority in zero-to-one niches - launched key FinTech licensing silos from scratch and grew the licensing hub +373% (318 to 1,504 clicks) across 21 jurisdictions",
@@ -108,6 +111,7 @@ export const roles: Role[] = [
     company: "Cheil Worldwide, Samsung B2C",
     title: "SEO Analyst (Regional)",
     period: "Dec 2021 - Aug 2024",
+    location: "Singapore / Indonesia",
     blurb:
       "Localization SEO for Samsung websites across multiple APAC markets (Indonesia, Malaysia, Singapore, Philippines).",
     url: "https://samsung.com",
@@ -160,7 +164,27 @@ export const roles: Role[] = [
   },
 ];
 
-export const projects = [
+export interface Project {
+  name: string;
+  blurb: string;
+  /** Optional: some projects are internal work with nowhere to link. */
+  url?: string;
+  /** Optional supporting bullets, as a longer case study. */
+  bullets?: string[];
+}
+
+export const projects: Project[] = [
+  {
+    name: "AI-Augmented SEO Ops & Vibe-Coded Tooling",
+    blurb:
+      "Design and ship AI-assisted workflows that turn raw search data into decisions, combining prompt engineering, agentic browser automation, and rapid prototyping.",
+    bullets: [
+      "Built an LLM-driven GSC / SEO analysis pipeline that surfaces query-, page- and category-level uplift",
+      "Automated search-console data extraction with a browser-agent workflow, cutting manual reporting time",
+      "Prototyped a React portfolio site end-to-end using AI coding agents and MCP tooling",
+      "Stack: Claude/ChatGPT, agentic browser automation, MCP, VS Code, REST/JSON APIs, React, Git",
+    ],
+  },
   {
     name: "UrbanIdea ID",
     blurb:
@@ -172,7 +196,7 @@ export const projects = [
     blurb: "Transforming how people carry, one bag at a time",
     url: "https://essentialgear.id",
   },
-] as const;
+];
 
 export const skills = [
   {
@@ -210,6 +234,16 @@ export const skills = [
       "Data-Driven Decision Making",
       "SEO Tools (Ahrefs, SEMrush)",
     ],
+  },
+  {
+    group: "AI Workflow Automation",
+    level: "Advanced",
+    items: ["AI", "LLM", "Agentic"],
+  },
+  {
+    group: "Data Analysis & Dashboards",
+    level: "Advanced",
+    items: ["Analytics", "Data"],
   },
 ] as const;
 

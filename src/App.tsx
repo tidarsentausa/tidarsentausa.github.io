@@ -188,18 +188,16 @@ export default function App() {
     }
   });
 
+  /* One column, no subheading: the links are self-evident and a lone
+     "Navigate / Elsewhere" pair just adds two labels to read past.
+     BigBackColumn requires `heading`, but renders an empty one as nothing. */
   const columns: BigBackColumn[] = [
     {
-      heading: "Navigate",
+      heading: "",
       links: [
         { label: "Experience", href: "#experience" },
         { label: "Projects", href: "#projects" },
         { label: "Skills", href: "#skills" },
-      ],
-    },
-    {
-      heading: "Elsewhere",
-      links: [
         { label: "LinkedIn", href: `https://linkedin.com/in/${profile.linkedin}` },
         { label: "Email", href: `mailto:${profile.email}` },
       ],
@@ -267,7 +265,12 @@ export default function App() {
                   >
                     <div>
                       <h3 className="role__company">{role.company}</h3>
-                      <p className="role__title">{role.title}</p>
+                      <p className="role__title">
+                        {role.title}
+                        {role.location && (
+                          <span className="role__location"> · {role.location}</span>
+                        )}
+                      </p>
                     </div>
                     <span className="role__period">{role.period}</span>
                   </button>
@@ -307,9 +310,18 @@ export default function App() {
               <GlassCard key={p.name} className="project">
                 <h3>{p.name}</h3>
                 <p>{p.blurb}</p>
-                <a href={p.url} target="_blank" rel="noreferrer">
-                  {p.url.replace(/^https?:\/\//, "")}
-                </a>
+                {p.bullets && (
+                  <ul className="project__bullets">
+                    {p.bullets.map((b) => (
+                      <li key={b}>{b}</li>
+                    ))}
+                  </ul>
+                )}
+                {p.url && (
+                  <a href={p.url} target="_blank" rel="noreferrer">
+                    {p.url.replace(/^https?:\/\//, "")}
+                  </a>
+                )}
               </GlassCard>
             ))}
           </div>
