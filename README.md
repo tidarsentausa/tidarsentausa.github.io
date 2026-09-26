@@ -16,18 +16,6 @@ in a B2B digital project management seat.
 Alongside that I run **UrbanIdea ID** and **Essential Gear ID**, Indonesian
 commerce and media properties, and consult freelance on SEO strategy.
 
-## What the numbers were
-
-| | |
-|---|---|
-| 10+ | years in search |
-| 2.6M | impressions added |
-| +1595% | click growth |
-| 230K | monthly visits |
-
-Every figure traces back to a specific bullet in my résumé. Where a number was
-weak or unsourced, I replaced it or cut it.
-
 ## What I actually do
 
 **SEO and content strategy.** Keyword research, technical and on-page audits,
