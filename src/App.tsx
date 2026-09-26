@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import {
-  AsciiHero,
   BigBack,
   EyebrowPill,
   GlassCard,
+  Goldeneye,
   LogoMarquee,
   MockIDE,
   StatCounter,
@@ -14,6 +14,7 @@ import {
   type MarqueeItem,
 } from "performative-ui";
 import {
+  REVEAL_QUERIES,
   education,
   languages,
   profile,
@@ -139,53 +140,34 @@ const MARQUEE: MarqueeItem[] = tools.map((t) => {
       };
 });
 
-/* The footer's ASCII field.
+/* The footer's magnifier.
 
-   A cursor-reactive canvas behind the wordmark, using the library's `bare`
-   variant, which is the no-chrome form intended for use as a background layer.
+   Goldeneye is a lens: the base layer paints `text_default`, and a circular
+   scope clipped to the cursor's position paints `text_reveal` in the inverse
+   colours inside it, over a binary-digit pattern rendered at a second, larger
+   size. Sweeping the pointer across the name therefore reads as the name
+   resolving into the queries underneath it.
 
-   Two deliberate departures from the defaults, both because the library's
-   defaults assume a dark hero panel and this is a light footer:
+   The reveal string is a single line of the search terms this resume is
+   actually about, so the lens shows the work rather than a placeholder.
 
-   - `palette` is passed explicitly. The default fill is a pale grey (#c8c8d4)
-     chosen to sit on the library's near-black panel; on this page's paper
-     background it would be nearly invisible. The ink at low alpha keeps the
-     field legible against --paper without introducing a second colour.
-   - `baseOpacity` sits low (the library suggests ~0.18 for background use).
-     The field sits UNDER the nav links and the wordmark, so anything stronger
-     competes with text that has to stay readable.
+   Both texts share one font-size custom property by default, which does not
+   work here: the queries are far longer than the name, so sizing them together
+   would either overflow the reveal or shrink the name to a caption. The scope's
+   headline is therefore sized down separately in CSS.
 
-   `reactive` is left on: the ripple and spotlight are the point of the
-   component, and a static field would be a screenshot. The reduced-motion
-   branch below disables the whole thing rather than just the animation, since
-   a permanently-looping rAF canvas is motion regardless of how it is eased. */
-function FooterAscii() {
-  const [reduced, setReduced] = useState(false);
-
-  useEffect(() => {
-    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const onChange = () => setReduced(mq.matches);
-    onChange();
-    mq.addEventListener("change", onChange);
-    return () => mq.removeEventListener("change", onChange);
-  }, []);
-
-  if (reduced) return null;
-
+   Unlike the ASCII canvas this replaced, there is no rAF loop: the lens only
+   moves in direct response to pointer movement, so it is not autonomous motion
+   and stays under prefers-reduced-motion. */
+function FooterLens() {
   return (
-    <AsciiHero
-      variant="bare"
-      className="footer__ascii"
-      fontSize={11}
-      fontFamily="'IBM Plex Mono', ui-monospace, monospace"
-      palette={["#14141a"]}
-      baseOpacity={0.16}
-      reactive
-      rippleStrength={1.1}
-      rippleRadius={7}
-      spotlightOpacity={0.5}
-      spotlightRadius={9}
-      frameMs={50}
+    <Goldeneye
+      className="footer__lens"
+      text_default={profile.name}
+      text_reveal={REVEAL_QUERIES}
+      pattern="0 1 0 1 "
+      scopeSize={300}
+      fontFamily="'Space Mono', 'IBM Plex Mono', ui-monospace, monospace"
     />
   );
 }
@@ -588,7 +570,7 @@ export default function App() {
           duplicated contentinfo for screen readers. This wrapper exists only to
           own the positioning context for the ASCII field. */}
       <div className="footer">
-        <FooterAscii />
+        <FooterLens />
 
         <div className="footer__content">
           <BigBack

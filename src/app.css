@@ -1135,42 +1135,118 @@ body::before {
 
 /* Footer.
 
-   The ASCII field is an absolutely-positioned canvas layer, so the footer
-   becomes the positioning context and the content is lifted above it. The
-   library's `bare` variant already renders a plain relative div with an
-   absolutely-positioned canvas inside, so the layer needs no chrome of its
-   own beyond the inset.
+   The magnifier is an absolutely-positioned layer, so the footer becomes the
+   positioning context and the content is lifted above it.
 
-   `isolation: isolate` matters here: the canvas is painted at low alpha and
-   the footer sits directly on the page's paper background. Without its own
-   stacking context the field would composite against whatever is behind the
-   footer rather than against the footer's own background.
+   `isolation: isolate` keeps the lens compositing against the footer's own
+   paper background rather than whatever sits behind the footer.
 
-   pointer-events are off so the ripple still tracks the cursor across the
-   footer while the nav links underneath stay clickable. The field is
-   decorative and already aria-hidden by the component. */
+   The lens is NOT pointer-events: none, unlike the canvas it replaced. It has
+   to receive pointermove to move the scope, so it stays interactive. The
+   content above it keeps its own pointer events, so the nav links still
+   work; the lens simply responds in the gaps around them. */
 .footer {
   position: relative;
   isolation: isolate;
   /* The paper colour moves up from BigBack to here, since BigBack's own
-     background is dropped to transparent to expose the field. */
+     background is dropped to transparent to expose the lens. */
   background: var(--paper);
 }
 
-.footer__ascii {
+/* The lens fills the footer.
+
+   The library defaults to min-height: 360px and a crosshair cursor. The height
+   is overridden so the lens matches the footer rather than forcing it taller,
+   and the crosshair is kept: it advertises that the footer is interactive
+   rather than a static print. */
+.footer__lens {
   position: absolute;
   inset: 0;
   z-index: 0;
   width: 100%;
   height: 100%;
-  pointer-events: none;
+  min-height: 0;
 }
 
 .footer__content {
   position: relative;
-  /* Above the field. The links and wordmark have to stay readable, so the
-     content is never allowed to sink behind the canvas. */
+  /* Above the lens. The links and wordmark have to stay readable, so the
+     content is never allowed to sink behind it.
+
+     The background is deliberately left transparent. Painting paper here would
+     be the obvious way to keep the text legible, but this block spans the
+     full footer, so it would hide the lens completely — the magnifier would
+     never be seen. Legibility over the lens is solved with a halo on the text
+     itself, below, which costs no lens area. */
   z-index: 1;
+}
+
+/* A hard paper halo, so the text survives being crossed by the lens.
+
+   The scope paints --pui-fg (ink, rgb(20,20,26)) behind the text, and the nav
+   links are also ink — measured, the link's computed colour and the scope's
+   background were byte-identical, so a link under the lens would be ink on
+   ink and simply vanish. Backing the whole content block with opaque paper
+   would fix that but cover the lens entirely, since the block is full-width.
+
+   A tight text-shadow in the paper colour is the alternative: the glyphs keep
+   their own ink and gain a light rim, so they read over both the paper and
+   the scope. The offsets are 1px rather than a soft blur, which keeps the
+   hard-edged look of the rest of the page instead of introducing the only
+   soft edge on it.
+
+   The wordmark is painted by a ::before/::after pseudo-element rather than by
+   the element's own text, so the shadow has to be set on those too — a
+   text-shadow on .pui-bigback__wordmark itself would apply to nothing. */
+.footer__content .pui-bigback__link,
+.footer__content .pui-bigback__wordmark::before,
+.footer__content .pui-bigback__wordmark::after {
+  text-shadow:
+    1px 0 0 var(--paper),
+    -1px 0 0 var(--paper),
+    0 1px 0 var(--paper),
+    0 -1px 0 var(--paper),
+    1px 1px 0 var(--paper),
+    -1px -1px 0 var(--paper),
+    1px -1px 0 var(--paper),
+    -1px 1px 0 var(--paper);
+}
+
+/* Goldeneye's own theme.
+
+   The component reads --pui-bg and --pui-fg, which the library sets globally
+   for its dark panel. Pointed at this page's own tokens so the base layer is
+   ink-on-paper and the scope inverts to paper-on-ink — the same pairing the
+   rest of the page uses, rather than a second, off-palette scheme.
+
+   Without this the lens would paint a near-black slab (--pui-bg) over the
+   footer's paper and fight the wordmark. */
+.footer__lens {
+  --pui-bg: var(--paper);
+  --pui-fg: var(--ink);
+}
+
+/* The reveal is a single line of query text spanning the full width, so its
+   length is what caps the readable size. 4.05vw is the largest size at which
+   the 40-character string still fits inside the viewport at every width
+   measured (320/390/560/768/1440): 13px at 320 up to 58px at 1440. The base
+   and the scope share one --pui-goldeneye-headline-size by default, so the
+   scope's headline is sized down separately here; the name keeps the size the
+   wordmark rules below set. */
+.footer__lens .pui-goldeneye__scope .pui-goldeneye__headline {
+  font-size: 4.05vw;
+  letter-spacing: -0.02em;
+  padding: 0;
+}
+
+/* The binary pattern is decorative texture behind the type. The library's
+   0.32 opacity is too strong over a light paper background — it competes with
+   the name — so it is dropped, and given a wider tracking so the digits read
+   as a field rather than as a row of figures to be decoded. */
+.footer__lens .pui-goldeneye__pattern {
+  opacity: 0.09;
+  letter-spacing: 1.1em;
+  color: var(--ink);
 }
 
 /* BigBack paints its own opaque background, which would cover the field

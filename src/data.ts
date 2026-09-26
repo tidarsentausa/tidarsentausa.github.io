@@ -61,6 +61,22 @@ export const brands = [
   "Cheil Worldwide",
 ] as const;
 
+/**
+ * The search terms the footer's lens reveals over the name.
+ *
+ * Written as the queries a client would actually type, not as a list of
+ * self-descriptions: the reveal only earns its place if it reads like the work.
+ *
+ * Kept to a single line because the lens clips to a circle and the headline is
+ * nowrap, so a wrapped string would show only its first fragment. It is also
+ * kept SHORT on purpose. The reveal shares one nowrap line spanning the full
+ * width, so its length sets the largest readable size: a 92-character version
+ * of this string measured 5.6px at a 320px viewport, which is not readable at
+ * any width. At 40 characters it measures 13px at 320 and 58px at 1440, which
+ * is. Three terms, one per pillar of the work, beats four unreadable ones.
+ */
+export const REVEAL_QUERIES = "seo · digital marketing · organic growth";
+
 export const roles: Role[] = [
   {
     company: "LegalBison.com",
