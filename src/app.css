@@ -420,8 +420,10 @@ body::before {
   --pui-logo-text: var(--ink);
   margin: 40px 0 0;
   padding: 10px 0;
-  border-top: 2px solid var(--line);
-  border-bottom: 2px solid var(--line);
+  /* Closed on all four sides, so the strip reads as one bordered band rather
+     than a pair of rules with open ends. The 2px matches .hero__stats directly
+     above it, which is already a full box, so the two stack without a seam. */
+  border: 2px solid var(--line);
   background: var(--surface);
 }
 
