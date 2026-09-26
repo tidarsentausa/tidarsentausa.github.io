@@ -259,12 +259,24 @@ body::before {
 /* Below this the name needs the full measure: at 8vw the display face needs
    roughly 340px to hold "TIDAR SENTAUSA" on one line, and it stops doing that
    well before the photo would run out of room beside it. So the row becomes a
-   column, and the portrait centres over the block it now introduces. */
+   column.
+
+   It stays LEFT-aligned, which is the point of this rule. It used to centre
+   here — align-items: center and text-align: center — so the hero was flush
+   left on desktop and centred on a phone, and the name's left edge moved with
+   the viewport. Every other section on the page is left-aligned at every width,
+   so the hero was the single exception and read as a different site on mobile.
+   The portrait now sits hard against the same left margin as the name below it,
+   and the two share one optical edge at every size.
+
+   align-items is what aligns the portrait itself, and text-align is what
+   aligns the text inside .hero__id; both are needed, because the column
+   stretches the text block but not the fixed-width photo. */
 @media (max-width: 760px) {
   .hero__top {
     flex-direction: column;
-    align-items: center;
-    text-align: center;
+    align-items: flex-start;
+    text-align: left;
     gap: 20px;
   }
 
@@ -274,13 +286,6 @@ body::before {
 
   .hero__id {
     width: 100%;
-  }
-
-  /* The eyebrow pill is inline-flex, so it needs centring once the block it
-     sits in is centred. The global border-radius reset has already squared
-     it off. */
-  .hero__id .pui-eyebrow {
-    margin-inline: auto;
   }
 }
 
@@ -361,11 +366,46 @@ body::before {
   line-height: 1;
 }
 
-/* At the same 560px as .to-top__label below, so the pair collapses together and
-   stays the same width: one button with a word, one glyph alone. The
-   accessible name is unchanged either way, so nothing is lost. */
+/* Both buttons become the same square at this width.
+
+   Measured collapsed, they were 58.3x38.3 (theme) against 36.3x44.6 (top), so
+   one was a wide lozenge and the other a narrow upright chip. Three causes, all
+   fixed here rather than nudged:
+
+   - Different padding: .btn carries 10px/20px, .to-top 10px/12px.
+   - Different type size: .btn is 0.85rem, .to-top 0.78rem.
+   - Different glyph widths: the theme glyph is pinned to a 1em square (14.3px),
+     but the arrow is a raw character whose advance is only 8.3px. Even with
+     identical padding the two would have sized to different content.
+
+   So each is given an explicit square box and its padding is dropped entirely,
+   with the glyph centred inside. 44px is the common minimum touch target, and
+   the offset shadow still reads because it is drawn outside the box.
+
+   The labels are hidden at the same breakpoint as before, so the accessible
+   name is unchanged — the theme button keeps its aria-label and the arrow stays
+   aria-hidden, as they were. */
 @media (max-width: 560px) {
-  .btn__themelabel {
+  .rail {
+    right: 16px;
+    bottom: 16px;
+    gap: 10px;
+  }
+
+  .btn--theme,
+  .to-top {
+    /* One square for both, stated once. */
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    justify-content: center;
+    /* The type no longer drives the box, so the difference stops mattering —
+       but it is pinned anyway so the two glyphs are optically the same size. */
+    font-size: 0.85rem;
+  }
+
+  .btn__themelabel,
+  .to-top__label {
     display: none;
   }
 }
@@ -468,17 +508,9 @@ body::before {
   outline-offset: 3px;
 }
 
-/* The arrow alone is enough once space is tight. The corner offset moved to
-   .rail above; only the button's own padding and label change here. */
-@media (max-width: 560px) {
-  .to-top {
-    padding: 10px 12px;
-  }
-
-  .to-top__label {
-    display: none;
-  }
-}
+/* The arrow alone is enough once space is tight. The corner offset, the shared
+   square box and the hidden label are all handled together in the rail's 560px
+   block above, so there is nothing left to change here. */
 
 /* Respect a stated preference for reduced motion: the fade is the only
    animation here, and smooth scrolling is handled globally in html above. */
