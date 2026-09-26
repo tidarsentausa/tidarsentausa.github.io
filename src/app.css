@@ -81,7 +81,7 @@ body::before {
   z-index: 1;
   max-width: var(--max);
   margin: 0 auto;
-  padding: 0 24px 80px;
+  padding: 0 24px;
 }
 
 /* ---------- hero ---------- */
@@ -818,12 +818,9 @@ body::before {
 /* StickyBanner: flat strip, hard border, always a single line.
 
    The library lays this out as a centered flex row, so the leading and
-   trailing text wrap onto separate lines once the viewport narrows. nowrap
-   plus hidden overflow holds it to one line.
-
-   The trailing text is passed as a bare string and lands as a text node, not
-   an element, so :last-child is not usable to drop it on small screens. The
-   font is scaled down instead, which keeps both halves readable. */
+   trailing text wrap onto separate lines as the viewport narrows. nowrap
+   plus hidden overflow holds it to one line, and both halves are now real
+   elements, so the trailing one can be dropped rather than clipped. */
 .pui-sticky-banner,
 .pui-stickybanner,
 [class*="pui-sticky"] {
@@ -840,12 +837,28 @@ body::before {
   overflow: hidden;
 }
 
-@media (max-width: 700px) {
+/* The trailing half is the one to lose first: the leading line is the
+   message. Both children are min-width:0 so they can shrink inside the flex
+   row instead of forcing the banner wider than the viewport, which is what
+   pushed the text off-screen on a phone. */
+.banner__leading,
+.banner__trailing {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@media (max-width: 760px) {
   .pui-sticky-banner,
   .pui-stickybanner,
   [class*="pui-sticky"] {
     font-size: 0.66rem;
     letter-spacing: 0.02em;
+    justify-content: flex-start;
+  }
+
+  .banner__trailing {
+    display: none;
   }
 }
 
@@ -918,13 +931,21 @@ body::before {
   display: none;
 }
 
-/* Decorative terminal, full-bleed below the content column. */
+/* The last section sits above the IDE window, whose own container supplies
+   the bottom spacing. Its lower margin and the page's bottom padding were
+   both counting, which opened a 152px gap before an otherwise 400px-tall
+   box. Drop the page padding and let the workbench own the space. */
+.page > .section:last-of-type {
+  margin-bottom: 0;
+}
+
+/* Consistent with the 72px section rhythm. */
 .workbench {
   position: relative;
   z-index: 1;
   max-width: var(--max);
   margin: 0 auto;
-  padding: 0 24px 72px;
+  padding: 72px 24px 72px;
 }
 
 /* True edge-to-edge wordmark. The footer is a full-width block, so break out
