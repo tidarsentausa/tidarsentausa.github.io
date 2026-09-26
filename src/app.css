@@ -1324,6 +1324,43 @@ body::before {
   );
 }
 
+/* Both layers in caps.
+
+   Applied in CSS rather than by rewriting the strings, so the component keeps
+   literals that read as typed ("resume") and the capitals stay a presentation
+   decision in one place. It also means the two layers cannot drift apart: both
+   are the same element type, so one selector covers the base and the scope.
+
+   This is a real change to the type's shape, not just its case. "resume" is
+   all lowercase, so its ink was only x-height — the tallest glyph reached 69px
+   in a 137.72px em. In caps the ink rises to the cap height, which moves the
+   optical centre of the word. Any vertical nudge has to be measured AFTER
+   this, not before. */
+.footer__lens .pui-goldeneye__headline {
+  text-transform: uppercase;
+  /* A small optical nudge down.
+
+     Worth recording that the type MEASURES as already centred: with the disc
+     parked away from the word, the glyph ink runs 5451..5548 in a band of
+     5435..5565, so 16px of clearance above and 17px below, and the per-row ink
+     profile is symmetric about its midpoint (peaks at 5453 and 5543, equidistant
+     from 5498). Canvas metrics agree the line box is centred to within 1px.
+
+     So this is not correcting a measured error — it is applying the requested
+     adjustment, kept small on purpose. 6px is about 4% of the 137.72px em and
+     3% of the band's height: enough to see, not enough to make the word look
+     like it is falling out of the band. The reveal inside the disc gets the
+     same nudge, so the two layers stay registered to each other and the swap
+     still reads as one image changing rather than two layers drifting apart.
+
+     `top` is safe to move because the library insets the headline with
+     top/right/bottom/left: 0 and centres the text with flex. Overriding `top`
+     shifts the whole box down within the lens; the text stays centred inside
+     that box, so the nudge is uniform rather than shifting the glyphs relative
+     to their own line box. */
+  top: 6px;
+}
+
 /* The headline typeface.
 
    The library styles the headline `font-family: var(--pui-goldeneye-font,
