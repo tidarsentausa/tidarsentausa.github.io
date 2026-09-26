@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import {
-  BigBack,
   EyebrowPill,
   GlassCard,
   Goldeneye,
@@ -9,7 +8,6 @@ import {
   StatCounter,
   StatusDot,
   StickyBanner,
-  type BigBackColumn,
   type IdeToken,
   type MarqueeItem,
 } from "performative-ui";
@@ -307,22 +305,6 @@ export default function App() {
     }
   });
 
-  /* One column, no subheading: the links are self-evident and a lone
-     "Navigate / Elsewhere" pair just adds two labels to read past.
-     BigBackColumn requires `heading`, but renders an empty one as nothing. */
-  const columns: BigBackColumn[] = [
-    {
-      heading: "",
-      links: [
-        { label: "Experience", href: "#experience" },
-        { label: "Projects", href: "#projects" },
-        { label: "Skills", href: "#skills" },
-        { label: "LinkedIn", href: `https://linkedin.com/in/${profile.linkedin}` },
-        { label: "Email", href: `mailto:${profile.email}` },
-      ],
-    },
-  ];
-
   return (
     <>
       {/* Single message: the copy states the location, so a trailing
@@ -588,17 +570,21 @@ export default function App() {
         />
       </div>
 
-      {/* A plain div, not a <footer>: BigBack already renders its own footer
-          landmark, and nesting one inside another is invalid and produces a
-          duplicated contentinfo for screen readers. This wrapper exists only to
-          own the positioning context for the ASCII field. */}
-      <div className="footer">
-        <FooterLens />
+      {/* The footer is the lens, and nothing else.
 
-        <div className="footer__content">
-          <BigBack company={profile.name} columns={columns} />
-        </div>
-      </div>
+          BigBack is gone entirely: its wordmark, its nav columns and its
+          copyright row were the three things competing with the magnifier, and
+          with the links removed the only thing in this box is the interaction
+          itself. The nav survives in the hero, which already links Experience
+          and Email, so nothing becomes unreachable.
+
+          It is a real <footer> now. It was a plain div only while BigBack
+          rendered its own footer landmark underneath; with BigBack gone there
+          is nothing to nest inside, so the landmark is stated here directly
+          and assistive tech gets one contentinfo region rather than none. */}
+      <footer className="footer">
+        <FooterLens />
+      </footer>
 
       <button
         type="button"

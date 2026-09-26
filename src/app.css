@@ -1135,22 +1135,28 @@ body::before {
 
 /* Footer.
 
-   The magnifier is an absolutely-positioned layer, so the footer becomes the
-   positioning context and the content is lifted above it.
+   The magnifier is an absolutely-positioned layer filling this box, and it is
+   the ONLY thing in it — BigBack is gone, so there is no nav, no wordmark and
+   no copyright row competing with the reveal. The nav survives in the hero.
+
+   The explicit height is load-bearing because of that. The lens is absolutely
+   positioned, so it contributes nothing to layout; with no in-flow content the
+   footer would collapse to zero and the disc would have no room. 400px holds a
+   disc of ~376px, and clamp() keeps that workable on a short phone screen
+   where 400px would be a third of the viewport.
 
    `isolation: isolate` keeps the lens compositing against the footer's own
    paper background rather than whatever sits behind the footer.
 
-   The lens is NOT pointer-events: none, unlike the canvas it replaced. It has
-   to receive pointermove to move the scope, so it stays interactive. The
-   content above it keeps its own pointer events, so the nav links still
-   work; the lens simply responds in the gaps around them. */
+   The lens is NOT pointer-events: none, unlike the canvas it replaced: it has
+   to receive pointermove to move the scope. With nothing layered above it
+   now, the whole box is live. */
 .footer {
   position: relative;
   isolation: isolate;
-  /* The paper colour moves up from BigBack to here, since BigBack's own
-     background is dropped to transparent to expose the lens. */
   background: var(--paper);
+  border-top: 3px solid var(--line);
+  height: clamp(260px, 42vh, 400px);
 }
 
 /* The lens fills the footer.
@@ -1175,49 +1181,6 @@ body::before {
   width: 100%;
   height: 100%;
   min-height: 0;
-}
-
-.footer__content {
-  position: relative;
-  /* Above the lens. The links and wordmark have to stay readable, so the
-     content is never allowed to sink behind it.
-
-     The background is deliberately left transparent. Painting paper here would
-     be the obvious way to keep the text legible, but this block spans the
-     full footer, so it would hide the lens completely — the magnifier would
-     never be seen. Legibility over the lens is solved with a halo on the text
-     itself, below, which costs no lens area. */
-  z-index: 1;
-}
-
-/* A hard paper halo, so the text survives being crossed by the lens.
-
-   The scope paints --pui-fg (ink, rgb(20,20,26)) behind the text, and the nav
-   links are also ink — measured, the link's computed colour and the scope's
-   background were byte-identical, so a link under the lens would be ink on
-   ink and simply vanish. Backing the whole content block with opaque paper
-   would fix that but cover the lens entirely, since the block is full-width.
-
-   A tight text-shadow in the paper colour is the alternative: the glyphs keep
-   their own ink and gain a light rim, so they read over both the paper and
-   the scope. The offsets are 1px rather than a soft blur, which keeps the
-   hard-edged look of the rest of the page instead of introducing the only
-   soft edge on it.
-
-   The wordmark is painted by a ::before/::after pseudo-element rather than by
-   the element's own text, so the shadow has to be set on those too — a
-   text-shadow on .pui-bigback__wordmark itself would apply to nothing. That
-   rule is now moot: the wordmark is display: none. */
-.footer__content .pui-bigback__link {
-  text-shadow:
-    1px 0 0 var(--paper),
-    -1px 0 0 var(--paper),
-    0 1px 0 var(--paper),
-    0 -1px 0 var(--paper),
-    1px 1px 0 var(--paper),
-    -1px -1px 0 var(--paper),
-    1px -1px 0 var(--paper),
-    -1px 1px 0 var(--paper);
 }
 
 /* Goldeneye's own theme.
@@ -1263,37 +1226,6 @@ so the scope's headline is sized down separately here. */
   color: var(--ink);
 }
 
-/* BigBack paints its own opaque background, which would cover the field
-   completely. Drop it to transparent so the canvas shows through, and let the
-   footer wrapper carry the paper colour instead. `!important` is retained
-   because the library sets the background on the same element and the
-   override has to win. */
-.footer .pui-bigback {
-  background: transparent !important;
-}
-
-/* BigBack is now just the footer's link rail: its wordmark is display: none and
-   its baseline row is hidden, so the only thing it contributes is the nav
-   columns. The padding is raised from 40px/24px to 64px/64px because the
-   magnifier needs somewhere to live — with the wordmark gone the footer
-   collapsed to 225px, less than the 230px radius of the scope, so a lens
-   centred on the name spilled out through the top and bottom edges. 64px of
-   padding either side of a 64px nav gives ~350px, which holds the disc.
-
-   The name is no longer injected from React; Goldeneye's base layer supplies
-   it as text_default. */
-.pui-bigback {
-  border-top: 3px solid var(--line);
-  background: var(--paper) !important;
-  color: var(--ink) !important;
-  padding: 64px 0;
-  overflow: hidden;
-}
-
-.pui-bigback__svg {
-  display: none;
-}
-
 /* The last section sits above the IDE window, whose own container supplies
    the bottom spacing. Its lower margin and the page's bottom padding were
    both counting, which opened a 152px gap before an otherwise 400px-tall
@@ -1309,95 +1241,6 @@ so the scope's headline is sized down separately here. */
   max-width: var(--max);
   margin: 0 auto;
   padding: 72px 24px 72px;
-}
-
-/* The BigBack wordmark is removed entirely.
-
-   It painted the name as a 13.5vw two-line block at 0.15 opacity, and it was
-   fighting the magnifier: the lens reveals the search terms inside a scope
-   that is only ~300px across, and a full-width wordmark sitting on top of it
-   meant the reveal was never the thing you saw first. The name now appears
-   only where the interaction is — as Goldeneye's base layer, revealed into
-   the queries under the cursor.
-
-   The element is display: none rather than visibility: hidden so it leaves
-   the layout entirely; BigBack still renders the wrapper div, and leaving it
-   in flow would reserve its 28px/8px margins and the two lines' height as
-   empty space under the lens. */
-.pui-bigback__wordmark {
-  display: none;
-}
-
-/* Nav columns and the baseline row both centered. */
-.pui-bigback__cols {
-  display: flex;
-  justify-content: center;
-  gap: 56px;
-  flex-wrap: wrap;
-  text-align: center;
-}
-
-.pui-bigback__heading {
-  font-family: var(--mono-body);
-  font-size: 0.7rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.14em;
-  color: var(--muted);
-  text-align: center;
-  margin-bottom: 10px;
-}
-
-.pui-bigback__list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  align-items: center;
-}
-
-.pui-bigback__link {
-  color: var(--ink) !important;
-  font-family: var(--mono-body);
-  font-size: 0.82rem;
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  text-decoration: none;
-  border-bottom: 2px solid transparent;
-}
-
-.pui-bigback__link:hover {
-  border-bottom-color: var(--accent);
-}
-
-/* The baseline row is removed entirely.
-
-   BigBack renders <span class="pui-bigback__copyright"> unconditionally — it
-   is not behind a conditional — so the only ways to drop it are an empty prop
-   or hiding the row. Hiding the row is the better of the two: passing
-   copyright="" leaves an empty flex row still carrying its border-top and
-   padding, which reads as a stray rule under the wordmark.
-
-   This is scoped to the copyright span rather than the whole row, so the row
-   would survive if social links were ever passed. Nothing else uses it today,
-   so in practice the row goes too. */
-.pui-bigback__copyright {
-  display: none;
-}
-
-/* With its only child gone the row has no content, so it must not keep its
-   top border or vertical padding either. */
-.pui-bigback__base:not(:has(.pui-bigback__social)) {
-  display: none;
-}
-
-.pui-bigback__social {
-  display: inline-flex;
-  gap: 18px;
-  justify-content: center;
 }
 
 /* GlassCard is still the layout primitive, so neutralize its glass entirely. */
