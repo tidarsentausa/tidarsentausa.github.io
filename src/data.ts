@@ -50,7 +50,6 @@ export const tools = [
   { name: "Google Tag Manager", slug: "googletagmanager", src: null },
   { name: "Microsoft Clarity", slug: null, src: "/clarity.png" },
   { name: "Similarweb", slug: "similarweb", src: null },
-  { name: "Looker", slug: "looker", src: null },
 ] as const;
 
 export const brands = [
