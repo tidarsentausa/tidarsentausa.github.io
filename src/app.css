@@ -219,33 +219,6 @@ body::before {
   margin: 28px 0 48px;
 }
 
-/* A button carrying an icon beside its label.
-
-   The label stays visible, so the link keeps a real text accessible name and
-   the icon is aria-hidden. The filter forces the whole glyph to black:
-   brightness(0) collapses every channel to zero, so the mark lands on the
-   page's ink regardless of the colours in the source SVG, and saturate(0)
-   guarantees no residual hue survives. Without it the official mark renders
-   LinkedIn blue, which is the one colour on this page that belongs to neither
-   the paper nor the ink. */
-.btn--icon {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.btn__icon {
-  display: block;
-  flex: none;
-  filter: brightness(0) saturate(0);
-}
-
-.btn--solid .btn__icon {
-  /* On the filled button the ink is inverted, so the glyph has to follow or
-     it disappears into the background. */
-  filter: brightness(0) invert(1);
-}
-
 .btn {
   display: inline-block;
   padding: 10px 20px;
