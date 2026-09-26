@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" data-theme="dark">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -8,6 +8,40 @@
       name="description"
       content="Tidar Sentausa, SEO Manager and Digital Project Manager in Kuala Lumpur. Ten years turning search traffic into pipeline for Samsung, LegalBison, and more."
     />
+    <script>
+      /* Apply the stored theme BEFORE the first paint.
+
+         React cannot do this. The hook in src/theme.ts sets data-theme from an
+         effect, which runs after the browser has already painted the document
+         — and this page is a cream paper design, so a returning dark-mode
+         visitor would get a full frame of light before it corrected. That reads
+         as a bug, not a theme.
+
+         So the attribute is set here, inline and synchronous, in the head. The
+         stylesheet is already in place by the time this runs, so the very first
+         paint is in the right theme.
+
+         Deliberately NOT a module: modules are deferred and would run too late
+         to help. Wrapped in try/catch because localStorage throws in Safari
+         private mode and in sandboxed iframes, and an uncaught throw here would
+         abort the rest of the head.
+
+         On no stored value the attribute is left OFF, which renders light: the
+         light palette lives in :root rather than in [data-theme="light"], so
+         it needs no attribute at all. The key is the same string as THEME_KEY
+         in src/theme.ts; it is duplicated rather than shared because this has
+         to be inline and cannot import. */
+      (function () {
+        try {
+          var stored = window.localStorage.getItem("tidar-theme");
+          if (stored === "light" || stored === "dark") {
+            document.documentElement.dataset.theme = stored;
+          }
+        } catch (e) {
+          /* No storage available; light is the fallback and needs nothing. */
+        }
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

@@ -7,6 +7,22 @@
 
 @import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Instrument+Serif:ital@0;1&family=Space+Mono:wght@400;700&family=JetBrains+Mono:wght@400;700;800&display=swap");
 
+/* ---------- theme tokens ----------
+
+   Two palettes, one set of names. :root IS the light palette and carries every
+   token, so the page renders correctly with no data-theme attribute at all (JS
+   disabled, or the pre-paint script in index.html not run) and light is the
+   fallback rather than a special case.
+
+   [data-theme="dark"] then overrides ONLY the values that change. Anything not
+   listed there is theme-invariant by construction — the fonts, the shadows
+   (which reference --line, so they re-derive), the spacing and the max width.
+
+   The two are inversions, not a second design: dark is light with paper and ink
+   swapped. That is what keeps the neobrutalist contract intact, because the
+   hard border and the offset shadow are the SAME colour in both themes (--line
+   tracks whichever one is ink), so a card in dark mode is still a light rule
+   with a light shadow thrown down-right of it. */
 :root {
   --ink: #14141a;
   --paper: #f4f1ea;
@@ -16,6 +32,30 @@
   --accent-2: #2b5cff;
   --muted: #5c5c66;
 
+  /* Text that sits ON an accent fill. The two solid-accent surfaces are
+     .btn--solid and .skillgroup__level, and both are orange in either theme.
+
+     Light is white, which is the existing design. Dark is the paper colour: the
+     orange is a LIGHT colour, so carrying white text on it in dark mode is what
+     fails — #fff on #ff7a45 measures 2.59:1. Ink on the same orange measures
+     6.8:1, and it is also the only version that keeps the goldeneye's inverted
+     scope legible, since that scope paints this colour as its background. */
+  --on-accent: #ffffff;
+
+  /* The graph-paper grid. It was a literal rgba(20,20,26,.045) matching the
+     light ink; inverting the page means inverting the grid too, and a fixed
+     dark grid on a dark page is invisible. */
+  --grid: rgba(20, 20, 26, 0.045);
+
+  /* The logo strip's monochrome filter. simple-icons ships black paths, so this
+     is "keep them black and crisp"; see the dark override for why it changes. */
+  --logo-filter: grayscale(1) contrast(1.1);
+
+  /* Tells the UA to render form controls, scrollbars and the caret against the
+     page rather than against a fixed assumption. Without it a dark page still
+     gets a light scrollbar gutter on Windows and Chrome. */
+  color-scheme: light;
+
   /* Three monospace voices. */
   --mono-body: "IBM Plex Mono", "Cascadia Mono", ui-monospace, monospace;
   --mono-display: "Space Mono", "IBM Plex Mono", ui-monospace, monospace;
@@ -24,6 +64,41 @@
   --shadow: 6px 6px 0 var(--line);
   --shadow-sm: 4px 4px 0 var(--line);
   --max: 1120px;
+}
+
+[data-theme="dark"] {
+  /* The inversion. --ink and --line were the same value in light and still are
+     (one is text, the other is the border/shadow colour, and they are meant to
+     match), so the border and its offset shadow stay a single voice. */
+  --ink: #f2efe8;
+  --paper: #14141a;
+  /* Lifted off the paper rather than pure white: a pure #fff card on #14141a
+     has no surface of its own and reads as a hole punched in the page. */
+  --surface: #1e1e26;
+  --line: #f2efe8;
+
+  /* Both accents are lightened. #ff4f18 on #14141a measures 4.3:1 and #2b5cff
+     on the same measures 2.6:1 — the blue fails outright for the role
+     locations and project links, which are body-size text, and the orange is
+     marginal against the same background. These clear 4.5:1 on paper. */
+  --accent: #ff7a45;
+  --accent-2: #7d9bff;
+  --muted: #a3a3b0;
+
+  /* Dark text on the orange, for the reason on the light-mode --on-accent. */
+  --on-accent: #14141a;
+
+  --grid: rgba(242, 239, 232, 0.05);
+  color-scheme: dark;
+
+  /* Marks are black, so on a near-black strip they would disappear entirely.
+     invert() is the same trick the library uses for its own dark default
+     (--pui-logo-filter ships `invert(92%) grayscale(100%)`); grayscale comes
+     first so a coloured raster still lands on neutral, and the rasters are
+     excluded in the .logos rules below because inverting a green frog and a
+     blue Clarity mark produces two wrong brand colours rather than one right
+     one. */
+  --logo-filter: invert(1) grayscale(1) contrast(1.1);
 }
 
 html {
@@ -78,8 +153,8 @@ body::before {
   z-index: 0;
   pointer-events: none;
   background-image:
-    linear-gradient(rgba(20, 20, 26, 0.045) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(20, 20, 26, 0.045) 1px, transparent 1px);
+    linear-gradient(var(--grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid) 1px, transparent 1px);
   background-size: 28px 28px;
 }
 
@@ -256,7 +331,42 @@ body::before {
 
 .btn--solid {
   background: var(--accent);
-  color: #fff;
+  color: var(--on-accent);
+}
+
+/* The theme toggle, in the same language as every other .btn so it reads as
+   part of the row rather than as a browser widget dropped into it.
+
+   It is the only .btn that leads with a glyph, so the glyph is pinned to a
+   fixed box: a ☀ and a ☾ have different advance widths, and letting them size
+   the button would make it visibly jump a few pixels on every toggle — the one
+   piece of motion on a page that is otherwise still while you click.
+
+   The label is the theme you are switching TO, matching the glyph. Both are
+   uppercased by .btn already, so "LIGHT" is what the row shows. */
+.btn--theme {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn__glyph {
+  /* One em square, centred, so both glyphs occupy the same footprint. */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1em;
+  height: 1em;
+  font-size: 1.05em;
+  line-height: 1;
+}
+
+/* Below this the row has wrapped to two or three lines and the full word is
+   more than the button needs; the glyph plus the accessible label carry it. */
+@media (max-width: 560px) {
+  .btn__themelabel {
+    display: none;
+  }
 }
 
 /* ---------- back to top ---------- */
@@ -430,11 +540,18 @@ body::before {
 }
 
 /* All marks monochrome for a consistent strip. simple-icons ships black
-   paths already, so this only affects the one raster (Screaming Frog), which
-   is desaturated here to match. */
+   paths already, so in light this only affects the one raster (Screaming
+   Frog), which is desaturated here to match.
+
+   The filter comes from the token so dark mode can invert the black marks to
+   white. The raster exclusion is separate and load-bearing: filter order is
+   invert-then-grayscale, so a raster would have its brand colour inverted
+   BEFORE being flattened — the green frog lands magenta and the Clarity mark
+   orange. Both are excluded below and given a brightness lift instead, which
+   keeps them recognisable and legible on the dark strip. */
 .logos {
-  --pui-logo-filter: grayscale(1) contrast(1.1);
-  --pui-logo-filter-hover: grayscale(1) contrast(1.1);
+  --pui-logo-filter: var(--logo-filter);
+  --pui-logo-filter-hover: var(--logo-filter);
   --pui-logo-text: var(--ink);
   margin: 40px 0 0;
   padding: 10px 0;
@@ -467,6 +584,16 @@ body::before {
 .pui-marquee__item img[src$=".png"] {
   width: 24px;
   height: 24px;
+}
+
+/* Rasters opt out of the invert, for the reason given on .logos above. What
+   replaces it is theme-scoped: in light the mark is already dark enough
+   against white, and in dark a brand-coloured raster at full chroma is the one
+   element on the strip allowed to keep its colour, so it only needs a
+   brightness lift to sit on the near-black band. */
+[data-theme="dark"] .logos img[src$=".png"],
+[data-theme="dark"] .pui-marquee__item img[src$=".png"] {
+  filter: brightness(1.15) contrast(1.05);
 }
 
 .pui-marquee__item img:hover {
@@ -935,7 +1062,7 @@ body::before {
   padding: 1px 7px;
   border: 2px solid var(--line);
   background: var(--accent);
-  color: #fff;
+  color: var(--on-accent);
   font-size: 0.68rem;
   font-weight: 700;
   text-transform: uppercase;
@@ -1140,6 +1267,54 @@ body::before {
 [class*="pui-ide"]:not(.pui-ide) {
   border-radius: 0 !important;
   box-shadow: none;
+}
+
+/* The window's own dark chrome, in a dark page.
+
+   The library hardcodes this near-black (#0a0a10 body, #11111a chrome,
+   #1a1a26 tab) rather than deriving it from a token, so it does not follow
+   the theme at all. In light that is deliberate and good — a dark editor
+   window on cream paper is the one deliberate exception to the page's
+   inversion. In dark it stops being an exception and becomes a hole: #0a0a10
+   against a #14141a page is a difference of 10/255, so the panel loses its
+   edge and the code appears to float.
+
+   Lift the three surfaces instead of inverting the syntax colours. The token
+   colour (#d5d5e0) and the muted greys already sit correctly on a dark ground
+   in both themes, and re-tinting them per theme would be four more overrides
+   to keep in step for no gain.
+
+   --surface is #1e1e26 and --paper is #14141a in dark, so the window now
+   reads as a panel sitting ON the page rather than a void cut into it, while
+   the chrome and tab stay a step apart from the body as they are in light. */
+[data-theme="dark"] .pui-ide {
+  background: var(--surface);
+}
+
+[data-theme="dark"] .pui-ide__chrome {
+  background: var(--paper);
+}
+
+[data-theme="dark"] .pui-ide__tab {
+  background: var(--line);
+  color: var(--paper);
+}
+
+/* The syntax comment token, in dark.
+
+   The library hardcodes this at #6b7280 and does not vary it by theme, so it
+   is the one token that has to be corrected by hand. It was authored against
+   the library's own #0a0a10 window, where it measures 4.34:1 and passes. This
+   page lifts the window to --surface (#1e1e26) in dark, which is lighter, and
+   that drops the same text to 3.42:1 — a real failure, and caused by the lift
+   above rather than by anything inherent to the dark palette.
+
+   Comments are the lowest-emphasis token in the snippet by design, so this
+   raises them to a lighter grey rather than darkening the window back. --muted
+   is already the page's own dim-text colour and is not used inside the IDE, so
+   borrowing it keeps the window consistent with the rest of the dark page. */
+[data-theme="dark"] .pui-tok-com {
+  color: var(--muted);
 }
 
 /* Fixed height, and the overflow is hidden rather than auto. A fixed height
@@ -1438,10 +1613,19 @@ body::before {
      in red and nothing to the eye. The scope still inverts to ink, which is
      what keeps the revealed name legible: ink on orange measures 5.7:1, and
      the inversion is what makes the disc read as a lens rather than as a
-     second panel. */
+     second panel.
+
+     --pui-fg points at --on-accent rather than --ink, and that indirection is
+     what makes the lens theme-invariant. Both layers are text ON the orange
+     panel, so they are bound by the same contrast rule as the solid buttons,
+     and that rule flips with the theme: in light the orange is a dark-ish
+     #ff4f18 under white ink, in dark it is a light #ff7a45 under dark ink.
+     Reading --ink here instead made the base word cream-on-orange in dark mode
+     at 2.25:1, and the scope — which paints this colour as its own background —
+     went with it. */
   --pui-goldeneye-font: var(--pui-font-serif);
   --pui-bg: var(--accent);
-  --pui-fg: var(--ink);
+  --pui-fg: var(--on-accent);
 }
 
 /* The last section sits above the IDE window, whose own container supplies

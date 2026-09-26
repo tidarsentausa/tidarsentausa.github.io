@@ -21,6 +21,48 @@ import {
   stats,
   tools,
 } from "./data";
+import { useTheme } from "./theme";
+
+/* The theme switch.
+
+   A button rather than a checkbox, and labelled by what it DOES rather than by
+   what it IS. `aria-label` names the action — "Switch to dark theme" — because
+   that is what a screen reader user needs to decide whether to press it. The
+   visible glyph is decorative and hidden from assistive tech for the same
+   reason: "☀" read aloud is noise, and the two states would otherwise both be
+   announced as a bare symbol.
+
+   No aria-pressed here. That attribute describes a toggle button that holds a
+   position, and this button has no stable "on" state to report: its meaning is
+   entirely in the action it performs. The current theme is conveyed by the
+   glyph and by the label, and the page's own colours are the real answer for a
+   sighted user.
+
+   The glyph shows the theme you would GET, not the one you are in — the sun
+   means "light is available", which is the same convention GitHub and every OS
+   use. Getting this backwards (showing a moon on a light page to mean "you are
+   in dark mode") is the common mistake and it inverts the user's expectation of
+   what the press will do. */
+function ThemeToggle() {
+  const { theme, toggle } = useTheme();
+  const next = theme === "dark" ? "light" : "dark";
+  const label = `Switch to ${next} theme`;
+
+  return (
+    <button
+      type="button"
+      className="btn btn--theme"
+      onClick={toggle}
+      aria-label={label}
+      title={label}
+    >
+      <span className="btn__glyph" aria-hidden="true">
+        {theme === "dark" ? "☀" : "☾"}
+      </span>
+      <span className="btn__themelabel">{next}</span>
+    </button>
+  );
+}
 
 /* A little of the workbench, rendered as if it were about to ship.
 
@@ -420,6 +462,7 @@ export default function App() {
             <a className="btn btn--solid" href={`mailto:${profile.email}`}>
               Email
             </a>
+            <ThemeToggle />
           </div>
 
           <div className="hero__stats">
