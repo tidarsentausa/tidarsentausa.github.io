@@ -11,35 +11,6 @@
   --ink: #14141a;
   --paper: #f4f1ea;
   --surface: #ffffff;
-  /* Card fill. Translucent rather than solid so the library's gradient
-     pseudo-element, which paints at z-index -1 BEHIND the card, is actually
-     visible through it. An opaque fill hides that gradient completely: the
-     pseudo-element is still in the DOM and even reaches opacity .35 on hover,
-     but an opaque white layer sits on top of it, so it never reaches the eye
-     in any state. At .82 the gradient reads as a tint through the paper
-     rather than as a colour block competing with the text.
-
-     The alpha is deliberately high. Lower values and the text starts fighting
-     the gradient for contrast; this keeps body copy comfortably legible while
-     still letting the hue through. */
-  --surface-card: rgba(255, 255, 255, 0.82);
-
-  /* Opacity for the library's gradient pseudo-element.
-
-     Two multipliers decide whether the gradient is visible at all, and they
-     compound. The pseudo-element paints at z-index -1, i.e. behind the card,
-     so only (1 - fill alpha) of it survives: at 0.82 that is 0.18. The
-     library's own resting value is 0, which yields nothing in any case.
-
-     So the tint needs an explicit floor. 0.55 x 0.18 leaves roughly a tenth
-     of the gradient on screen, which reads as a soft hue rather than a colour
-     block. Hover lifts it to 0.8, where the library's blur keeps it diffuse.
-
-     Kept well below 1 deliberately: the gradient is a 120deg wash across the
-     whole card, so at full strength it competes with the body copy for
-     attention and starts costing contrast. */
-  --card-glow-rest: 0.55;
-  --card-glow-hover: 0.8;
   --line: #14141a;
   --accent: #ff4f18;
   --accent-2: #2b5cff;
@@ -588,55 +559,6 @@ body::before {
   letter-spacing: 0.1em;
 }
 
-/* ---------- card fill and glow ---------- */
-
-/* Every card in the page is a performative-ui GlassCard, whose gradient
-   pseudo-element paints BEHIND the card at z-index -1. That is why the fill
-   has to be translucent: an opaque fill hides the gradient in every state,
-   including hover, where the library raises the pseudo-element to .35.
-
-   The override also has to out-specify the library. `.pui-glass-card--glow-
-   hover:hover::before` is two classes plus a pseudo-class, so a single class
-   here loses to it on specificity regardless of source order; the glow-hover
-   value is therefore rewritten explicitly in the hover rule below.
-
-   The blur is kept. Without it the gradient's three stops read as hard colour
-   bands across the card rather than as a wash. */
-.role::before,
-.project::before,
-.panel::before,
-.engagement::before,
-.case::before,
-.skillgroup::before {
-  opacity: var(--card-glow-rest);
-  filter: blur(14px);
-}
-
-.role:hover::before,
-.project:hover::before,
-.panel:hover::before,
-.engagement:hover::before,
-.case:hover::before,
-.skillgroup:hover::before,
-.pui-glass-card--glow-hover:hover::before {
-  opacity: var(--card-glow-hover);
-  filter: blur(14px);
-}
-
-/* Motion is a transition on the pseudo-element only, so a stated preference
-   for less motion is honoured by dropping the fade but keeping the tint: the
-   tint is the resting state, not an animation. */
-@media (prefers-reduced-motion: reduce) {
-  .role::before,
-  .project::before,
-  .panel::before,
-  .engagement::before,
-  .case::before,
-  .skillgroup::before {
-    transition: none;
-  }
-}
-
 /* ---------- roles ---------- */
 
 .roles {
@@ -647,10 +569,10 @@ body::before {
 
 .role {
   border: 2px solid var(--line);
-  background: var(--surface-card);
+  background: var(--surface);
   box-shadow: var(--shadow);
   backdrop-filter: none;
-  background-color: var(--surface-card);
+  background-color: var(--surface);
 }
 
 .role__head {
@@ -857,9 +779,9 @@ body::before {
 .engagement,
 .case {
   border: 2px solid var(--line);
-  background: var(--surface-card);
+  background: var(--surface);
   backdrop-filter: none;
-  background-color: var(--surface-card);
+  background-color: var(--surface);
   box-shadow: var(--shadow);
 }
 
@@ -961,9 +883,9 @@ body::before {
 
 .skillgroup {
   border: 2px solid var(--line);
-  background: var(--surface-card);
+  background: var(--surface);
   backdrop-filter: none;
-  background-color: var(--surface-card);
+  background-color: var(--surface);
   box-shadow: var(--shadow-sm);
   padding: 16px 18px;
 }
