@@ -1011,7 +1011,13 @@ body::before {
    The library lays this out as a centered flex row, so the leading and
    trailing text wrap onto separate lines as the viewport narrows. nowrap
    plus hidden overflow holds it to one line, and both halves are now real
-   elements, so the trailing one can be dropped rather than clipped. */
+   elements, so the trailing one can be dropped rather than clipped.
+
+   justify-content is pinned to center at every width rather than left to the
+   library default. The library already centers, but that is inherited, not
+   asserted: the narrow-screen media query below used to override it to
+   flex-start, which left the strip left-aligned on exactly the phones where
+   the single remaining word is most obviously off-centre. */
 .pui-sticky-banner,
 .pui-stickybanner,
 [class*="pui-sticky"] {
@@ -1026,14 +1032,44 @@ body::before {
   flex-wrap: nowrap;
   white-space: nowrap;
   overflow: hidden;
+  justify-content: center;
+  text-align: center;
+  /* Positioning context for the absolutely-placed sparkle below. */
+  position: relative;
+}
+
+/* The library injects a decorative sparkle span (pui-sparkle--blink) as the
+   first child, before the message. Centring the flex ROW therefore centres
+   the sparkle AND the text together, which leaves the text itself sitting
+   right of true centre by half the sparkle's width plus the gap: a constant
+   17px at the default size, measured at every viewport width.
+
+   The text is the only thing that should be centred, so the sparkle is taken
+   out of flow entirely. absolute positioning removes it from the flex layout,
+   so justify-content centres the message alone and the offset disappears.
+   It stays visible because it is positioned inside the strip rather than
+   hidden; only its claim on layout space is dropped. */
+.pui-sparkle {
+  position: absolute;
+  /* Anchored to the left padding edge so it reads as a leading mark without
+     participating in the centring maths. */
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
 }
 
 /* The leading run is the message, and it must be able to shrink rather than
    push the banner wider than the viewport. min-width: 0 is what allows a
    flex item to shrink below its content width; the ellipsis catches any
-   residual overflow on very narrow screens. */
+   residual overflow on very narrow screens.
+
+   flex-basis auto with shrink allowed keeps the item at its natural width
+   when it fits, so centring is exact. Pinning a basis instead would offset
+   the text from true centre by half the difference. */
 .banner__leading {
   min-width: 0;
+  flex: 0 1 auto;
   overflow: hidden;
   text-overflow: ellipsis;
 }
@@ -1044,7 +1080,8 @@ body::before {
   [class*="pui-sticky"] {
     font-size: 0.66rem;
     letter-spacing: 0.02em;
-    justify-content: flex-start;
+    /* Type shrinks on a phone; the centring does not change. */
+    justify-content: center;
   }
 }
 
