@@ -156,6 +156,82 @@ body::before {
   color: #fff;
 }
 
+/* ---------- back to top ---------- */
+
+/* Fixed square button in the same language as .btn: hard border, offset
+   shadow, no rounding. Hidden with opacity rather than display so it can
+   fade, and kept out of the tab order and the a11y tree while hidden, so it
+   cannot be focused or announced before it is visible. */
+.to-top {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border: 2px solid var(--line);
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(8px);
+  transition:
+    opacity 160ms ease,
+    transform 160ms ease,
+    box-shadow 90ms ease;
+}
+
+.to-top--on {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.to-top:hover {
+  box-shadow: 6px 6px 0 var(--line);
+  transform: translate(-2px, -2px);
+}
+
+.to-top:active {
+  transform: translate(2px, 2px);
+  box-shadow: 2px 2px 0 var(--line);
+}
+
+.to-top:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+/* The arrow alone is enough once space is tight. */
+@media (max-width: 560px) {
+  .to-top {
+    right: 16px;
+    bottom: 16px;
+    padding: 10px 12px;
+  }
+
+  .to-top__label {
+    display: none;
+  }
+}
+
+/* Respect a stated preference for reduced motion: the fade is the only
+   animation here, and smooth scrolling is handled globally in html above. */
+@media (prefers-reduced-motion: reduce) {
+  .to-top {
+    transition: none;
+  }
+}
+
 /* ---------- stats ---------- */
 
 /* One line per stat: value, suffix and label sit on a single baseline row.
@@ -477,6 +553,23 @@ body::before {
   font-weight: 700;
   text-transform: uppercase;
   white-space: nowrap;
+}
+
+/* On a phone the company name, the title and the period cannot share a row:
+   the period is nowrap and would either squeeze the title or force a
+   horizontal scrollbar. Stack it under the title instead, and let it sit
+   left-aligned with the text rather than looking like a floating tag. */
+@media (max-width: 560px) {
+  .role__head {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 18px 16px 16px;
+  }
+
+  .role__period {
+    white-space: normal;
+  }
 }
 
 .role__body {

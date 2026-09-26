@@ -143,6 +143,48 @@ export default function App() {
   const [openRole, setOpenRole] = useState<string | null>(roles[0].company);
   const [ideScreen, setIdeScreen] = useState(0);
 
+  /* Back to top.
+
+     The scroll is animated, but the destination is asserted twice: once up
+     front, and again once the animation should have finished. A smooth scroll
+     is cancellable, and on a long page it runs long enough that a stray wheel
+     or touch event, a layout shift from the IDE screen swapping, or the
+     browser clamping the target can all leave it short of the top. The final
+     assignment is what makes the button reliable rather than merely usually
+     correct, and it costs one property write.
+
+     Shown only once the page has scrolled past a screenful, so it never
+     covers the hero on the way in. The listener is passive because it does
+     no layout work, and state is only set when the boolean actually flips,
+     which keeps this to a handful of renders over a full scroll rather than
+     one per event. */
+  const [showTop, setShowTop] = useState(false);
+  useEffect(() => {
+    const onScroll = () => {
+      const past = window.scrollY > window.innerHeight * 0.75;
+      setShowTop((prev) => (prev === past ? prev : past));
+    };
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  const scrollToTop = () => {
+    const root = document.documentElement;
+    window.scrollTo({ top: 0, left: 0, behavior: "smooth" });
+    // Covers browsers that ignore the options object.
+    root.scrollTop = 0;
+
+    // Assert the destination once the animation has had time to finish.
+    window.setTimeout(() => {
+      if (window.scrollY > 0) {
+        window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+        root.scrollTop = 0;
+        window.scrollTo(0, 0);
+      }
+    }, 900);
+  };
+
   /* Alternate the two IDE screens.
 
      Each screen gets a React key, so switching remounts MockIDE.Body and the
@@ -471,6 +513,17 @@ export default function App() {
         columns={columns}
         style={{ "--wm": `"${profile.name}"` } as CSSProperties}
       />
+
+      <button
+        type="button"
+        className={`to-top${showTop ? " to-top--on" : ""}`}
+        aria-hidden={!showTop}
+        tabIndex={showTop ? 0 : -1}
+        onClick={scrollToTop}
+      >
+        <span aria-hidden="true">↑</span>
+        <span className="to-top__label">Top</span>
+      </button>
     </>
   );
 }
