@@ -1101,6 +1101,55 @@ body::before {
   overflow: hidden;
 }
 
+/* Footer.
+
+   The ASCII field is an absolutely-positioned canvas layer, so the footer
+   becomes the positioning context and the content is lifted above it. The
+   library's `bare` variant already renders a plain relative div with an
+   absolutely-positioned canvas inside, so the layer needs no chrome of its
+   own beyond the inset.
+
+   `isolation: isolate` matters here: the canvas is painted at low alpha and
+   the footer sits directly on the page's paper background. Without its own
+   stacking context the field would composite against whatever is behind the
+   footer rather than against the footer's own background.
+
+   pointer-events are off so the ripple still tracks the cursor across the
+   footer while the nav links underneath stay clickable. The field is
+   decorative and already aria-hidden by the component. */
+.footer {
+  position: relative;
+  isolation: isolate;
+  /* The paper colour moves up from BigBack to here, since BigBack's own
+     background is dropped to transparent to expose the field. */
+  background: var(--paper);
+}
+
+.footer__ascii {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.footer__content {
+  position: relative;
+  /* Above the field. The links and wordmark have to stay readable, so the
+     content is never allowed to sink behind the canvas. */
+  z-index: 1;
+}
+
+/* BigBack paints its own opaque background, which would cover the field
+   completely. Drop it to transparent so the canvas shows through, and let the
+   footer wrapper carry the paper colour instead. `!important` is retained
+   because the library sets the background on the same element and the
+   override has to win. */
+.footer .pui-bigback {
+  background: transparent !important;
+}
+
 /* BigBack's wordmark is an SVG using textLength + spacingAndGlyphs, which
    stretches short names into a squashed band. CSS cannot undo textLength, so
    hide the SVG and paint the name as real text at viewport width instead.

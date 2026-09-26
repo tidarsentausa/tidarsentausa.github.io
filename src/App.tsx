@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import {
+  AsciiHero,
   BigBack,
   EyebrowPill,
   GlassCard,
@@ -137,6 +138,57 @@ const MARQUEE: MarqueeItem[] = tools.map((t) => {
         key: t.name,
       };
 });
+
+/* The footer's ASCII field.
+
+   A cursor-reactive canvas behind the wordmark, using the library's `bare`
+   variant, which is the no-chrome form intended for use as a background layer.
+
+   Two deliberate departures from the defaults, both because the library's
+   defaults assume a dark hero panel and this is a light footer:
+
+   - `palette` is passed explicitly. The default fill is a pale grey (#c8c8d4)
+     chosen to sit on the library's near-black panel; on this page's paper
+     background it would be nearly invisible. The ink at low alpha keeps the
+     field legible against --paper without introducing a second colour.
+   - `baseOpacity` sits low (the library suggests ~0.18 for background use).
+     The field sits UNDER the nav links and the wordmark, so anything stronger
+     competes with text that has to stay readable.
+
+   `reactive` is left on: the ripple and spotlight are the point of the
+   component, and a static field would be a screenshot. The reduced-motion
+   branch below disables the whole thing rather than just the animation, since
+   a permanently-looping rAF canvas is motion regardless of how it is eased. */
+function FooterAscii() {
+  const [reduced, setReduced] = useState(false);
+
+  useEffect(() => {
+    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const onChange = () => setReduced(mq.matches);
+    onChange();
+    mq.addEventListener("change", onChange);
+    return () => mq.removeEventListener("change", onChange);
+  }, []);
+
+  if (reduced) return null;
+
+  return (
+    <AsciiHero
+      variant="bare"
+      className="footer__ascii"
+      fontSize={11}
+      fontFamily="'IBM Plex Mono', ui-monospace, monospace"
+      palette={["#14141a"]}
+      baseOpacity={0.16}
+      reactive
+      rippleStrength={1.1}
+      rippleRadius={7}
+      spotlightOpacity={0.5}
+      spotlightRadius={9}
+      frameMs={50}
+    />
+  );
+}
 
 export default function App() {
   const [temp, setTemp] = useState("funnel");
@@ -531,11 +583,21 @@ export default function App() {
         />
       </div>
 
-      <BigBack
-        company={profile.name}
-        columns={columns}
-        style={{ "--wm": `"${profile.name}"` } as CSSProperties}
-      />
+      {/* A plain div, not a <footer>: BigBack already renders its own footer
+          landmark, and nesting one inside another is invalid and produces a
+          duplicated contentinfo for screen readers. This wrapper exists only to
+          own the positioning context for the ASCII field. */}
+      <div className="footer">
+        <FooterAscii />
+
+        <div className="footer__content">
+          <BigBack
+            company={profile.name}
+            columns={columns}
+            style={{ "--wm": `"${profile.name}"` } as CSSProperties}
+          />
+        </div>
+      </div>
 
       <button
         type="button"
