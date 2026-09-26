@@ -1353,35 +1353,48 @@ body::before {
      meant to read as the library's component. Flagging the trade rather than
      making the call: revert the one line to 400 if the caps look clogged. */
   font-weight: 900;
-  /* An optical nudge down, sized for INSTRUMENT SERIF's metrics rather than
-     Georgia's.
+  /* Optically centred on the ORANGE YOU CAN SEE, not on the footer box.
 
-     This was originally calibrated against Georgia, because the footer was
-     silently rendering in Georgia: the library names Instrument Serif but
-     ships no @font-face and no font binaries, and our Google Fonts import did
-     not ask for it, so every "serif" measurement taken until now was
-     Georgia's. Georgia's caps put the ink centre 14.5px BELOW the line
-     centre; real Instrument Serif caps put it 3px ABOVE. The two disagree on
-     which direction the correction goes, so the number had to be re-derived.
+     This is the second attempt at this nudge and the first two were measured
+     against the wrong rectangle, which is why they never looked right.
 
-     3px matches the font's own offset, which lands the word optically
-     centred rather than merely nudged: at 6px it measured 15px of clearance
-     above and 17px below, so 3px puts it within a pixel of even.
+     The footer BOX is 130px. The visible orange is 186px: the top is masked
+     flush with the box, but the bottom bleed lets the panel run LENS_BLEED
+     (56px) further down, into the page's bottom padding. So the band a viewer
+     actually sees is 56px taller than the element being centred, all of the
+     extra at the BOTTOM. Measured: box 5435..5565, visible orange 5435..5620.
 
-     Worth recording that the type measures as already centred either way.
-     With the disc parked away from the word so it cannot contaminate the
-     reading, the glyph ink ran 5451..5548 in a band of 5435..5565 - 16px of
-     clearance above and 17px below - and the per-row ink profile was symmetric
-     about its midpoint, peaking at 5453 and 5543, equidistant from 5498. The
-     disc was not the cause either: lens and footer share a centre of 442,
-     offset zero.
+     Centring on the box therefore leaves the word riding high — its ink at
+     5447..5549 has a centre of 5498, which is 29.5px above the centre of the
+     visible orange at 5527.5. Every earlier nudge was a few pixels against a
+     30px error, which is why nudging down by 3 then 6 never closed the gap.
 
-     `top` is safe to move because the library insets the headline with
-     top/right/bottom/left: 0 and centres the text with flex. Overriding `top`
-     shifts the whole box down within the lens; the text stays centred inside
-     that box, so the nudge is uniform rather than shifting the glyphs relative
-     to their own line box. */
-  top: 3px;
+     The correction is the FULL bleed, LENS_BLEED (56px), not half of it.
+     Half was tried first on the reasoning that the extra band hangs below the
+     box and so only half the offset would be needed; that is wrong, because
+     the headline is centred in the box while the target is the centre of box
+     PLUS bleed, which is a whole bleed away. Measured: at 3px the ink sat
+     29.5px high, at 28px it sat 17.5px high — the nudge moved it by exactly
+     the 25px applied, and the error fell by the same 12px only because the
+     band is 185px rather than 130. The residual is the other half of the
+     bleed.
+
+     Stated as a literal rather than a calc() so the two mistakes that cost
+     time here — halving it, and reading the CSS var as authoritative — cannot
+     be repeated silently. LENS_BLEED is 56px in App.tsx and --lens-bleed
+     matches; if either changes, 60px = bleed + the 4px of optical
+     overshoot, and the CSS var will silently stop describing this value.
+
+     Verified in pixels against the visible band at 56px: 38px of clearance
+     above and 45px below, so 3.5px still short. 60px is that plus the
+     residual, and lands the word on the centre. The measurement chain that
+     got here — 29.5px high at 3px, 17.5px at 28px, 3.5px at 56px.
+
+     Still worth recording that the type is centred within its own box: the
+     line box measures 179px with a midpoint of 443 against the footer's 442,
+     and before any nudge the ink ran 16px above and 17px below inside the
+     box. The layout was never wrong. The reference rectangle was. */
+  top: 60px;
 }
 
 /* The headline typeface.
