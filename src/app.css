@@ -361,11 +361,56 @@ body::before {
   line-height: 1;
 }
 
-/* Below this the row has wrapped to two or three lines and the full word is
-   more than the button needs; the glyph plus the accessible label carry it. */
+/* At the same 560px as .to-top__label below, so the pair collapses together and
+   stays the same width: one button with a word, one glyph alone. The
+   accessible name is unchanged either way, so nothing is lost. */
 @media (max-width: 560px) {
   .btn__themelabel {
     display: none;
+  }
+}
+
+/* ---------- floating control rail ----------
+
+   The theme switch and back-to-top, stacked bottom-right.
+
+   One rail rather than two independently-positioned buttons. Both want the
+   bottom-right corner, so placing them separately would mean one of them
+   hardcoding the other's height to sit above it — and that number goes stale
+   the moment either button drops its label at the 560px breakpoint. A column
+   anchored to the bottom grows upward instead, so the bottom offset is correct
+   at any height and the two can never overlap.
+
+   The gap is the same 12px the hero CTA row uses, so the pair reads as one
+   system. z-index 40 is carried over from .to-top and is the same reason given
+   there: the footer lens disc reaches up behind this corner and would
+   otherwise intercept the clicks.
+
+   pointer-events is off on the rail and back on for the buttons, because the
+   rail's box is a flex container that spans the full width of its widest
+   child — as a bare fixed element it would be a wide invisible strip across
+   the bottom of the page, swallowing clicks on whatever sits under it. Only
+   the buttons themselves should be clickable. */
+.rail {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  z-index: 40;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 12px;
+  pointer-events: none;
+}
+
+.rail > * {
+  pointer-events: auto;
+}
+
+@media (max-width: 560px) {
+  .rail {
+    right: 16px;
+    bottom: 16px;
   }
 }
 
@@ -374,16 +419,11 @@ body::before {
 /* Fixed square button in the same language as .btn: hard border, offset
    shadow, no rounding. Hidden with opacity rather than display so it can
    fade, and kept out of the tab order and the a11y tree while hidden, so it
-   cannot be focused or announced before it is visible. */
+   cannot be focused or announced before it is visible.
+
+   No longer position:fixed — the rail owns the positioning now, and this is a
+   flex item in it. Everything else about the button is unchanged. */
 .to-top {
-  position: fixed;
-  right: 24px;
-  bottom: 24px;
-  /* Above the lens disc, which now bleeds past the footer's edges and so
-     reaches up behind this fixed button at every width tested. z-index 40
-     already beat the lens's 0, so the click was never actually blocked —
-     see the scrollToTop comment for what was really wrong. */
-  z-index: 40;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -428,11 +468,10 @@ body::before {
   outline-offset: 3px;
 }
 
-/* The arrow alone is enough once space is tight. */
+/* The arrow alone is enough once space is tight. The corner offset moved to
+   .rail above; only the button's own padding and label change here. */
 @media (max-width: 560px) {
   .to-top {
-    right: 16px;
-    bottom: 16px;
     padding: 10px 12px;
   }
 

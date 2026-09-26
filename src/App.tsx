@@ -42,7 +42,12 @@ import { useTheme } from "./theme";
    means "light is available", which is the same convention GitHub and every OS
    use. Getting this backwards (showing a moon on a light page to mean "you are
    in dark mode") is the common mistake and it inverts the user's expectation of
-   what the press will do. */
+   what the press will do.
+
+   It lives in .rail, stacked above back-to-top, rather than in the hero's CTA
+   row: a page-level preference is not one of the three things the hero is
+   offering to do, and in the corner it stays reachable from anywhere without
+   competing with the pitch. */
 function ThemeToggle() {
   const { theme, toggle } = useTheme();
   const next = theme === "dark" ? "light" : "dark";
@@ -462,7 +467,6 @@ export default function App() {
             <a className="btn btn--solid" href={`mailto:${profile.email}`}>
               Email
             </a>
-            <ThemeToggle />
           </div>
 
           <div className="hero__stats">
@@ -686,16 +690,36 @@ export default function App() {
         <FooterLens />
       </footer>
 
-      <button
-        type="button"
-        className={`to-top${showTop ? " to-top--on" : ""}`}
-        aria-hidden={!showTop}
-        tabIndex={showTop ? 0 : -1}
-        onClick={scrollToTop}
-      >
-        <span aria-hidden="true">↑</span>
-        <span className="to-top__label">Top</span>
-      </button>
+      {/* The two floating controls, stacked in one fixed rail.
+
+          The theme switch and back-to-top are the page's only persistent
+          controls, and they are stacked rather than placed independently so
+          they cannot collide: both are bottom-right, and giving each its own
+          `bottom` would mean one of them hardcoding the other's height.
+
+          The rail is a flex column anchored bottom-right, so the theme switch
+          sits directly above back-to-top and the pair grows upward — which
+          means the bottom offset stays correct no matter how tall either
+          button is, including at the narrow breakpoint where both drop their
+          labels.
+
+          Back-to-top keeps its own opacity/visibility fade, so it appears and
+          disappears inside the rail without the theme switch moving. It is not
+          display:none, so its box is always reserved and the theme switch holds
+          its position rather than dropping into the gap when it appears. */}
+      <div className="rail">
+        <ThemeToggle />
+        <button
+          type="button"
+          className={`to-top${showTop ? " to-top--on" : ""}`}
+          aria-hidden={!showTop}
+          tabIndex={showTop ? 0 : -1}
+          onClick={scrollToTop}
+        >
+          <span aria-hidden="true">↑</span>
+          <span className="to-top__label">Top</span>
+        </button>
+      </div>
     </>
   );
 }
