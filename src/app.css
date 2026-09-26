@@ -553,6 +553,25 @@ body::before {
   gap: 16px;
 }
 
+/* The AI-ops case study carries four supporting bullets, so it spans the full
+   row and sits above the two shorter side-project cards rather than beside
+   them. grid-column: 1 / -1 keeps it full width at every breakpoint. */
+.project--wide {
+  grid-column: 1 / -1;
+}
+
+.project--wide .project__bullets {
+  /* Two columns of bullets, so the wide card does not become a tall column. */
+  columns: 2;
+  column-gap: 32px;
+}
+
+@media (max-width: 720px) {
+  .project--wide .project__bullets {
+    columns: 1;
+  }
+}
+
 .project,
 .panel,
 .engagement,
@@ -807,26 +826,29 @@ body::before {
 
 /* MockIDE: keep the code, lose the rounded glass.
 
-   The body is pinned to a fixed height so the card does not grow and stretch
-   the page as the snippet types out line by line. The pre is the scroll
-   container: once the typed text passes the visible height it scrolls inside
-   the card instead of pushing the layout down. The last line is the console
-   output, so it is the one that gets clipped rather than the setup at the top.
+   The window is .pui-ide exactly. An attribute selector like [class*="pui-ide"]
+   would also match .pui-ide__chrome and .pui-ide__body, painting an orange
+   shadow on elements inside the window, so the shadow is scoped to the exact
+   class and the sharp-corner reset is kept for the descendants.
 
    The drop shadow is bright orange rather than the usual ink, to separate the
-   dark editor window from the dark footer wordmark behind it. */
-[class*="pui-mockide"],
-[class*="pui-ide"] {
+   dark editor window from the dark footer wordmark behind it.
+
+   No fixed height and no overflow: the window grows with the typed snippet, so
+   there is no scrollbar and nothing is cut off. The page does grow as the
+   snippet types, which is the intended behaviour here. */
+.pui-ide,
+[class*="pui-mockide"] {
   border-radius: 0 !important;
   border: 2px solid var(--line) !important;
   box-shadow: 8px 8px 0 var(--accent) !important;
   font-family: inherit;
 }
 
-.workbench .pui-ide__body {
-  height: 340px;
-  overflow-y: auto;
-  overscroll-behavior: contain;
+/* Descendants stay square but carry no shadow of their own. */
+[class*="pui-ide"] {
+  border-radius: 0 !important;
+  box-shadow: none;
 }
 
 /* BigBack's wordmark is an SVG using textLength + spacingAndGlyphs, which

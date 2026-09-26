@@ -170,6 +170,8 @@ export interface Project {
   url?: string;
   /** Optional supporting bullets, as a longer case study. */
   bullets?: string[];
+  /** Span the full grid row, for a card with enough content to warrant it. */
+  wide?: boolean;
 }
 
 export const projects: Project[] = [
@@ -177,6 +179,7 @@ export const projects: Project[] = [
     name: "AI-Augmented SEO Ops & Vibe-Coded Tooling",
     blurb:
       "Design and ship AI-assisted workflows that turn raw search data into decisions, combining prompt engineering, agentic browser automation, and rapid prototyping.",
+    wide: true,
     bullets: [
       "Built an LLM-driven GSC / SEO analysis pipeline that surfaces query-, page- and category-level uplift",
       "Automated search-console data extraction with a browser-agent workflow, cutting manual reporting time",

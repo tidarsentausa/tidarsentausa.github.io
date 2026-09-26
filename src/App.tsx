@@ -307,7 +307,10 @@ export default function App() {
           </h2>
           <div className="projects">
             {projects.map((p) => (
-              <GlassCard key={p.name} className="project">
+              <GlassCard
+                key={p.name}
+                className={`project${p.wide ? " project--wide" : ""}`}
+              >
                 <h3>{p.name}</h3>
                 <p>{p.blurb}</p>
                 {p.bullets && (
