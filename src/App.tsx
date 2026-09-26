@@ -143,15 +143,27 @@ const MARQUEE: MarqueeItem[] = tools.map((t) => {
    Goldeneye is a lens: the base layer paints `text_default`, and a circular
    scope clipped to the cursor's position paints `text_reveal` in the inverse
    colours inside it, over a binary-digit pattern rendered at a second, larger
-   size. Sweeping the pointer across the name therefore reads as the name
-   resolving into the queries underneath it.
+   size.
+
+   The two are the wrong way round from what the component's names suggest.
+   The base layer is the queries and the lens is the name, so hovering the
+   footer resolves the search terms back into the person who does them —
+   the search is the question, the lens is the answer. Reading it the other
+   way (name at rest, queries under the cursor) says the name is a query,
+   which is the opposite of the point.
+
+   Both strings share one font size, and it is sized by the QUERIES because
+   they are the longer one (40 characters against the name's 14) and they
+   live in the base layer on a nowrap line spanning the viewport. The name
+   inside the lens is therefore smaller than the terms around it, which is
+   what makes the disc read as a lens held up to the terms rather than as
+   more text.
 
    `scopeSize` is a DIAMETER, not a radius — the component divides it by two
    internally, so the 300 first passed here was a 150px radius.
 
    The diameter is tied to the footer's own HEIGHT, not the viewport. The
-   footer is a fixed 289px at every width (64px of BigBack padding either side
-   of a ~160px nav block, plus the border), so a viewport-scaled disc was
+   footer is a fixed 289px at every width, so a viewport-scaled disc was
    still wider than the box it sits in at 390px and up — measured 460px
    against a 289px footer, clipped top and bottom. Sizing to the measured
    footer height with a small inset keeps the disc wholly inside the paper at
@@ -173,18 +185,42 @@ function FooterLens() {
     const ro = new ResizeObserver(([entry]) => {
       const h = entry.contentRect.height;
       // Leave a few px of slack so the disc's edge never touches the border.
-      setDiameter(Math.max(160, Math.min(460, h - 24)));
+      // The floor is deliberately below the footer's own minimum height
+      // (clamp's 130px): the disc has to be able to shrink with the box, and a
+      // 160px floor would have been wider than a 130px footer, which is
+      // exactly the clipping this measurement exists to prevent.
+      setDiameter(Math.max(90, Math.min(460, h - 24)));
     });
     ro.observe(el);
     return () => ro.disconnect();
   }, []);
 
   return (
-    <div ref={host} className="footer__lens">
+    <div
+      ref={host}
+      className="footer__lens"
+      style={
+        {
+          // The name's size inside the lens, as a length the stylesheet can
+          // apply to the scope's headline alone. Goldeneye's own `fontSize`
+          // prop cannot be used for this: it sets --pui-goldeneye-headline-size,
+          // which both layers read, so it would shrink the base queries too and
+          // leave them stranded in the middle of the viewport.
+          //
+          // Space Mono advances 0.6em per glyph, so the name's rendered width
+          // is len * 0.6 * size. Solving for a width of 78% of the disc leaves
+          // a margin at each edge, because the lens is a circle and a name
+          // spanning the full diameter would have its first and last glyphs
+          // clipped by the curve. The 0.78 is measured against the disc, not
+          // the viewport, so the name always fits the lens it is inside.
+          "--lens-name-size": `${Math.round((diameter * 0.78) / (profile.name.length * 0.6))}px`,
+        } as CSSProperties
+      }
+    >
       <Goldeneye
         className="footer__lens-inner"
-        text_default={profile.name}
-        text_reveal={REVEAL_QUERIES}
+        text_default={REVEAL_QUERIES}
+        text_reveal={profile.name}
         pattern="0 1 0 1 "
         scopeSize={diameter}
         fontFamily="'Space Mono', 'IBM Plex Mono', ui-monospace, monospace"
@@ -359,6 +395,14 @@ export default function App() {
           <div className="hero__cta">
             <a className="btn" href="#experience">
               Experience
+            </a>
+            <a
+              className="btn"
+              href={profile.linkedin}
+              target="_blank"
+              rel="noreferrer"
+            >
+              LinkedIn
             </a>
             <a className="btn btn--solid" href={`mailto:${profile.email}`}>
               Email

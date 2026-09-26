@@ -1156,7 +1156,13 @@ body::before {
   isolation: isolate;
   background: var(--paper);
   border-top: 3px solid var(--line);
-  height: clamp(260px, 42vh, 400px);
+  /* The footer's height, named once so the type inside it can be derived from
+     it. A vh-based font size alone drifts out of step with this clamp: at
+     320x568 the box sits on its 130px floor while 1.26vh measures only 7px,
+     so the type ended up a third of the height it was allowed. Referencing
+     the same value keeps the two locked together at every viewport. */
+  --footer-h: clamp(130px, 21vh, 200px);
+  height: var(--footer-h);
 }
 
 /* The lens fills the footer.
@@ -1197,22 +1203,29 @@ body::before {
   --pui-fg: var(--ink);
 }
 
-/* Both layers share one headline size, which is the point of a magnifier: the
-   same type at the same size swapping content under the lens, rather than the
-   name being a headline and the reveal a caption.
+/* The queries in the base layer.
 
-   That fixes the size at what the REVEAL needs, since it is the longer string
-   (40 characters against the name's 13) on a nowrap line spanning the full
-   width. Space Mono advances 0.6em, so 40 characters is 24em, and fitting
-   that to the viewport needs 4vw exactly; letter-spacing: -0.02em buys back
-   enough to keep that figure. The 13px floor is what makes it survive on a
-   phone, where 4vw measures 12.8px. The 52px ceiling stops it shrinking to a
-   footnote on a wide desktop.
+   Sized against BOTH constraints, taking whichever is tighter, because the two
+   bind at opposite ends of the range and neither alone works:
 
-   The scope's headline is NOT sized separately any more — that override was
-   the thing making the two layers visibly different. */
+   WIDTH binds on phones. The queries are 40 characters on a nowrap line, and
+   Space Mono advances 0.6em, so they are 24em wide. That admits 4vw and
+   nothing more — at 320px the largest possible size is 12.8px, and sizing to
+   the footer instead produced 44px of type overflowing a 320px viewport.
+
+   HEIGHT binds on desktop, where there is width to spare and the box becomes
+   the limit. Space Mono's cap height is about 0.7em, so 71cqh leaves the line
+   filling roughly half the footer, with the lens still clearing it.
+
+   min() picks the tighter of the two per viewport, so neither is ever
+   exceeded. The footer is a query container, which makes cqh mean "1% of this
+   box" with no arithmetic; a 13px floor and 56px ceiling bound the ends. */
+.footer {
+  container-type: size;
+}
+
 .footer__lens {
-  --pui-goldeneye-headline-size: clamp(13px, 4vw, 52px);
+  --pui-goldeneye-headline-size: clamp(13px, min(4vw, 71cqh), 56px);
 }
 
 /* All caps on both layers. Set in CSS rather than by rewriting the strings, so
@@ -1224,15 +1237,33 @@ body::before {
   padding: 0;
 }
 
-/* The reveal disc is orange, not ink.
+/* The name inside the lens is sized to the DISC, not shared with the base.
+
+   This is the one place the two layers deliberately differ. With the name in
+   the scope, equal sizes stopped being possible: at the shared size the name
+   rendered 415px of glyphs inside a 236px disc, so the lens clipped it to
+   about 8 of its 14 characters — the effect read as a bug rather than as a
+   lens. The queries in the base layer still take the shared size, because
+   they are the string that has to span the viewport.
+
+   --lens-name-size is computed in App.tsx from the measured disc diameter
+   (see the comment there). It has to be a length rather than a number because
+   Goldeneye's own fontSize prop writes --pui-goldeneye-headline-size, which
+   BOTH layers read. */
+.footer__lens .pui-goldeneye__scope .pui-goldeneye__headline {
+  font-size: var(--lens-name-size, 24px);
+}
+
+/* The lens disc is orange, not ink.
 
    The library inverts the scope to --pui-fg (a near-black slab) over
    --pui-bg text. On this page that black was the loudest thing in the footer
    and read as a hole rather than as a lens, so the disc takes the page's
-   accent instead. --accent is #ff4f18, and the text goes to ink on top of it
-   rather than staying paper: paper on orange measures 2.9:1, which is not
-   readable, while ink on orange measures 5.7:1. The disc is decoration but
-   the reveal is the content, so the content gets the legible pairing. */
+   accent instead. --accent is #ff4f18, and the name inside goes to ink on
+   top of it rather than staying paper: paper on orange measures 2.9:1, which
+   is not readable, while ink on orange measures 5.7:1. The disc is
+   decoration but the name is the point of the whole effect, so the name
+   gets the legible pairing. */
 .footer__lens .pui-goldeneye__scope {
   background: var(--accent);
   color: var(--ink);
@@ -1241,14 +1272,14 @@ body::before {
 /* The binary pattern.
 
    Two different treatments, because the two layers have opposite jobs. In the
-   base it is background texture behind the name and stays very faint — the
+   base it is background texture behind the queries and stays very faint — the
    library's 0.32 is far too strong over a light paper background and competes
    with the type.
 
    In the scope it is the thing that makes the lens read as a magnifier, so it
    has to be clearly visible, and it inverts: paper on the orange disc, the
-   opposite of the base layer's ink on paper. The one 0.09 value applied to
-   both is why the digits disappeared inside the reveal. */
+   opposite of the base's ink on paper. The one 0.09 value applied to both is
+   why the digits disappeared inside the lens. */
 .footer__lens .pui-goldeneye__pattern {
   opacity: 0.09;
   letter-spacing: 1.1em;
