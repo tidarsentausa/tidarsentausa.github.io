@@ -176,6 +176,17 @@ export interface Project {
 
 export const projects: Project[] = [
   {
+    name: "UrbanIdea ID",
+    blurb:
+      "Indonesian media platform covering technology, gadgets, gaming, and digital lifestyle content",
+    url: "https://urbanidea.id",
+  },
+  {
+    name: "Essential Gear ID",
+    blurb: "Transforming how people carry, one bag at a time",
+    url: "https://essentialgear.id",
+  },
+  {
     name: "AI-Augmented SEO Ops & Vibe-Coded Tooling",
     blurb:
       "Design and ship AI-assisted workflows that turn raw search data into decisions, combining prompt engineering, agentic browser automation, and rapid prototyping.",
@@ -186,17 +197,6 @@ export const projects: Project[] = [
       "Prototyped a React portfolio site end-to-end using AI coding agents and MCP tooling",
       "Stack: Claude/ChatGPT, agentic browser automation, MCP, VS Code, REST/JSON APIs, React, Git",
     ],
-  },
-  {
-    name: "UrbanIdea ID",
-    blurb:
-      "Indonesian media platform covering technology, gadgets, gaming, and digital lifestyle content",
-    url: "https://urbanidea.id",
-  },
-  {
-    name: "Essential Gear ID",
-    blurb: "Transforming how people carry, one bag at a time",
-    url: "https://essentialgear.id",
   },
 ];
 

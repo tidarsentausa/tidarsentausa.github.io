@@ -554,8 +554,8 @@ body::before {
 }
 
 /* The AI-ops case study carries four supporting bullets, so it spans the full
-   row and sits above the two shorter side-project cards rather than beside
-   them. grid-column: 1 / -1 keeps it full width at every breakpoint. */
+   row and sits below the two shorter side-project cards. grid-column: 1 / -1
+   keeps it full width at every breakpoint. */
 .project--wide {
   grid-column: 1 / -1;
 }
