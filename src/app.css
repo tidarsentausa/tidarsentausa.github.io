@@ -1283,6 +1283,45 @@ body::before {
   overflow: visible;
   height: calc(100% + var(--lens-bleed) * 2);
   margin-top: calc(var(--lens-bleed) * -1);
+  /* Confine the lens to the footer, so the disc stops crossing the top edge.
+
+     Both layers overhang it. The box is grown by the bleed on each side and
+     starts LENS_BLEED (56px) above the footer, so the orange panel paints
+     56px over the page and the disc's ink arc crosses the top border — which
+     is what read as a black top border. It is not the border element: the
+     border is fine, but the lens sits above the footer's ::before, so
+     elementFromPoint on the footer's top edge returned the lens and the disc
+     covered the rule.
+
+     The mask is a HARD stop at the footer's own top edge, not a fade, and the
+     two identical stops at the same offset are what make it hard: a single
+     `transparent 0, #000 var(--lens-bleed)` pair is a 56px RAMP, which is what
+     the first attempt used and it left the disc visible above the border as a
+     soft grey gradient — measurably still there, just fainter. A fade is the
+     same overhang in a different form; the hard stop puts the panel's edge
+     exactly on the footer's edge, which is the point.
+
+     The disc's top arc is therefore cut off at that line — a flat chord about
+     200px wide across a 242px circle — but the arc is still curved everywhere
+     below it, and letting it through is what produced the black line.
+
+     Only the top is masked. The bottom bleed is the half that reads correctly:
+     the disc emerging over the page's lower edge into the space below, so it
+     is left alone. */
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    transparent 0,
+    transparent var(--lens-bleed),
+    #000 var(--lens-bleed),
+    #000 100%
+  );
+  mask-image: linear-gradient(
+    to bottom,
+    transparent 0,
+    transparent var(--lens-bleed),
+    #000 var(--lens-bleed),
+    #000 100%
+  );
 }
 
 /* The headline typeface.
