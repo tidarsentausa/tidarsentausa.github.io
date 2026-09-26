@@ -1338,17 +1338,21 @@ body::before {
    this, not before. */
 .footer__lens .pui-goldeneye__headline {
   text-transform: uppercase;
-  /* Instrument Serif is a single-weight family: 400 regular, plus italics.
-     The library asks for 900, and with no 900 in the family the browser
-     SYNTHESISES a bold by smearing the outlines — which on a high-contrast
-     display serif closes up the thin strokes and turns the letterforms
-     blotchy. 400 is the real weight, so the caps render as drawn.
+  /* The library's own weight. It asks for 900 on the headline, and that is
+     what this uses.
 
-     This is the one place the headline stops being the library's own
-     styling, and it is a correction rather than an override: the library
-     cannot know which family it will be pointed at, and 900 is right for
-     the sans it defaults to. */
-  font-weight: 400;
+     Worth knowing what 900 does to this particular family: Instrument Serif
+     ships a single weight (400 plus italics), so there is no 900 to select
+     and the browser SYNTHESISES one by smearing the outlines. On a face this
+     high in contrast that closes up the thin strokes — the hairline serifs
+     and the joins between bowl and stem fill in — so the caps come out
+     heavier and slightly blotchier than the drawing. 400 renders the
+     letterforms as designed.
+
+     Kept at 900 because that is the library's styling and this footer is
+     meant to read as the library's component. Flagging the trade rather than
+     making the call: revert the one line to 400 if the caps look clogged. */
+  font-weight: 900;
   /* An optical nudge down, sized for INSTRUMENT SERIF's metrics rather than
      Georgia's.
 
