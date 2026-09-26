@@ -12,7 +12,6 @@ import {
   type MarqueeItem,
 } from "performative-ui";
 import {
-  REVEAL_QUERIES,
   education,
   languages,
   profile,
@@ -157,34 +156,27 @@ const LENS_BLEED = 56;
    colours inside it, over a binary-digit pattern rendered at a second, larger
    size.
 
-   The two are the wrong way round from what the component's names suggest.
-   The base layer is the queries and the lens is the name, so hovering the
-   footer resolves the search terms back into the person who does them —
-   the search is the question, the lens is the answer. Reading it the other
-   way (name at rest, queries under the cursor) says the name is a query,
-   which is the opposite of the point.
+   The base layer is the word "resume" and the lens is the name, so hovering
+   the footer turns the label into the person it labels. Both layers take the
+   library's own defaults now — no size, colour, casing or tracking overrides
+   — so the two are the same type at the same size swapping under the circle,
+   which is what makes it read as one image changing rather than as two
+   pieces of text. The typeface is the library's serif, set through
+   --pui-goldeneye-font in app.css.
 
-   Both strings share one font size, and it is sized by the QUERIES because
-   they are the longer one (40 characters against the name's 14) and they
-   live in the base layer on a nowrap line spanning the viewport. The name
-   inside the lens is therefore smaller than the terms around it, which is
-   what makes the disc read as a lens held up to the terms rather than as
-   more text.
+   The name inside the lens is WIDER than the disc, so the circle shows a
+   fragment of it. That is the effect, not a fault: a lens that showed its
+   whole subject would be a tooltip.
 
    `scopeSize` is a DIAMETER, not a radius — the component divides it by two
    internally, so the 300 first passed here was a 150px radius.
 
    The diameter is tied to the footer's own HEIGHT, not the viewport, so the
-   disc can never be wider than the box it sits in — a viewport-scaled disc
-   measured 460px against a 289px footer and was clipped top and bottom. The
-   90px floor is below the footer's own 130px minimum for the same reason: a
-   floor above it would reintroduce the clipping this measurement prevents.
-
-   Both layers share one font size, and the name inside the lens is WIDER than
-   the disc, so the circle shows a fragment of it. That is the effect, not a
-   fault: it is what the queries did when they were the reveal, and a lens
-   that showed its whole subject would be a tooltip. See the scope-headline
-   rule in app.css.
+   disc scales with the box it sits in. It is deliberately LARGER than that
+   box: a circle centred in a band cannot exceed the band's height without
+   being cut at its edges, so it overlaps the footer's top and bottom instead,
+   over the border and onto the paper either side. LENS_BLEED is how far, and
+   the 460px ceiling stops it swallowing the workbench on a tall display.
 
    Unlike the ASCII canvas this replaced, there is no rAF loop: the lens only
    moves in direct response to pointer movement, so it is not autonomous motion
@@ -225,11 +217,10 @@ function FooterLens() {
     <div ref={host} className="footer__lens">
       <Goldeneye
         className="footer__lens-inner"
-        text_default={REVEAL_QUERIES}
+        text_default="resume"
         text_reveal={profile.name}
         pattern="0 1 0 1 "
         scopeSize={diameter}
-        fontFamily="'Space Mono', 'IBM Plex Mono', ui-monospace, monospace"
       />
     </div>
   );

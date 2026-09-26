@@ -1256,125 +1256,19 @@ body::before {
   margin-top: calc(var(--lens-bleed) * -1);
 }
 
-/* Goldeneye's own theme.
+/* The headline typeface.
 
-   The component reads --pui-bg and --pui-fg, which the library sets globally
-   for its dark panel. Pointed at this page's own tokens so the base layer is
-   ink-on-paper and the scope inverts to paper-on-ink — the same pairing the
-   rest of the page uses, rather than a second, off-palette scheme.
+   The library styles the headline `font-family: var(--pui-goldeneye-font,
+   var(--pui-font-sans))`, and ships --pui-font-serif as Instrument Serif. So
+   pointing --pui-goldeneye-font at --pui-font-serif is the library's own serif
+   variant — not a hardcoded family list, and not the fontFamily prop, which
+   was overriding the variable and pinning Space Mono here.
 
-   Without this the lens would paint a near-black slab (--pui-bg) over the
-   footer's paper and fight the wordmark. */
+   This is the one thing still set on the component, because the serif is the
+   point of the change. Everything else below is left at the library's
+   defaults. */
 .footer__lens {
-  --pui-bg: var(--paper);
-  --pui-fg: var(--ink);
-}
-
-/* The queries in the base layer.
-
-   Sized against BOTH constraints, taking whichever is tighter, because the two
-   bind at opposite ends of the range and neither alone works:
-
-   WIDTH binds on phones. The queries are 40 characters on a nowrap line, and
-   Space Mono advances 0.6em, so they are 24em wide. Spanning the viewport
-   exactly therefore means 100/24 = 4.167vw, and 4vw lands a few percent short
-   — measured 92% to 96% of the width, visibly short of both edges.
-
-   HEIGHT binds on desktop, where there is width to spare and the box becomes
-   the limit. Space Mono's cap height is about 0.7em, so 71cqh leaves the line
-   filling roughly half the footer, with the lens still clearing it.
-
-   min() picks the tighter of the two per viewport, so neither is ever
-   exceeded. The footer is a query container, which makes cqh mean "1% of this
-   box" with no arithmetic; a 13px floor and 56px ceiling bound the ends. */
-.footer {
-  container-type: size;
-}
-
-.footer__lens {
-  /* 4.167vw is the exact width-binding size (100 / 24em) but it OVERSHOOTS by
-     about 2%: measured 102% of the viewport with the line starting 11-15px
-     left of zero. The string is 40 characters including two spaces and two
-     middots, and the middots are narrower than Space Mono's uniform 0.6em
-     advance, so the arithmetic over-predicts the real width. 4.1vw lands the
-     line on the viewport edge at every width measured without crossing it.
-
-     The 56px ceiling is what stops this being full width on a wide desktop,
-     where 4.1vw would be 79px and the queries would be taller than the footer
-     they sit in. Height has to win there; a line that spans the width but
-     overflows the band is not a better result than one that fits. */
-  --pui-goldeneye-headline-size: clamp(13px, min(4.1vw, 71cqh), 56px);
-}
-
-/* All caps on both layers. Set in CSS rather than by rewriting the strings, so
-   data.ts keeps the queries readable as typed and the capitals are a
-   presentation decision that stays in one place.
-
-   letter-spacing is 0, not the -0.02em it used to be. Negative tracking
-   shrinks the line, and the line is what has to span the full width: at
-   -0.02em the queries measured 92-96% of the viewport and stopped short of
-   both edges. Space Mono's own 0.6em advance is already tight enough that the
-   text butts against the margins, which is the intent. */
-.footer__lens .pui-goldeneye__headline {
-  text-transform: uppercase;
-  letter-spacing: 0;
-  padding: 0;
-}
-
-  /* The name inside the lens deliberately shares the base layer's size
-     rather than being fitted to the disc.
-
-     Fitting it was possible and is what this replaced: a --lens-name-size
-     computed from the measured diameter, which kept every glyph inside the
-     circle. But that made the name a caption for the lens — 10px to 16px
-     against the queries' 13px to 56px — and a magnifier is not a caption.
-
-     At the shared size the name is much wider than the disc (470px of glyphs
-     in a 165px circle at 1440), so the lens shows a fragment of it. That is
-     the effect working, not a bug: the same clipping the queries had when
-     THEY were the reveal, and the reason the component is a magnifier at all
-     rather than a tooltip. Both layers are the same type at the same size
-     swapping under the circle, which is what makes it read as one image
-     changing rather than as two pieces of text. */
-.footer__lens .pui-goldeneye__scope .pui-goldeneye__headline {
-  font-size: var(--pui-goldeneye-headline-size);
-}
-
-/* The lens disc is orange, not ink.
-
-   The library inverts the scope to --pui-fg (a near-black slab) over
-   --pui-bg text. On this page that black was the loudest thing in the footer
-   and read as a hole rather than as a lens, so the disc takes the page's
-   accent instead. --accent is #ff4f18, and the name inside goes to ink on
-   top of it rather than staying paper: paper on orange measures 2.9:1, which
-   is not readable, while ink on orange measures 5.7:1. The disc is
-   decoration but the name is the point of the whole effect, so the name
-   gets the legible pairing. */
-.footer__lens .pui-goldeneye__scope {
-  background: var(--accent);
-  color: var(--ink);
-}
-
-/* The binary pattern.
-
-   Two different treatments, because the two layers have opposite jobs. In the
-   base it is background texture behind the queries and stays very faint — the
-   library's 0.32 is far too strong over a light paper background and competes
-   with the type.
-
-   In the scope it is the thing that makes the lens read as a magnifier, so it
-   has to be clearly visible, and it inverts: paper on the orange disc, the
-   opposite of the base's ink on paper. The one 0.09 value applied to both is
-   why the digits disappeared inside the lens. */
-.footer__lens .pui-goldeneye__pattern {
-  opacity: 0.09;
-  letter-spacing: 1.1em;
-  color: var(--ink);
-}
-
-.footer__lens .pui-goldeneye__scope .pui-goldeneye__pattern {
-  opacity: 0.3;
-  color: var(--paper);
+  --pui-goldeneye-font: var(--pui-font-serif);
 }
 
 /* The last section sits above the IDE window, whose own container supplies

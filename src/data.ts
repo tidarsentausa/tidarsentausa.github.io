@@ -61,26 +61,6 @@ export const brands = [
   "Cheil Worldwide",
 ] as const;
 
-/**
- * The search terms the footer is built around, and the base layer's text.
- *
- * Written as the queries a client would actually type, not as a list of
- * self-descriptions: they only earn their place if they read like the work.
- *
- * Kept to a single line because the lens clips to a circle and the headline is
- * nowrap, so a wrapped string would show only its first fragment. It is also
- * kept SHORT on purpose. It shares one font size with the name in the lens and
- * sits on a nowrap line spanning the full width, so its length sets the
- * largest readable size: a 92-character version of this string measured 5.6px
- * at a 320px viewport, which is not readable at any width. At 40 characters it
- * measures 13px at 320 and 52px at 1440, which is. Three terms, one per pillar
- * of the work, beats four unreadable ones.
- *
- * The name is the lens's text, not this — hovering resolves the terms back
- * into the person who does them.
- */
-export const REVEAL_QUERIES = "seo · digital marketing · organic growth";
-
 export const roles: Role[] = [
   {
     company: "LegalBison.com",
