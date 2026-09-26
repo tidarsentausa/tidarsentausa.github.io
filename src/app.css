@@ -219,6 +219,33 @@ body::before {
   margin: 28px 0 48px;
 }
 
+/* A button carrying an icon beside its label.
+
+   The label stays visible, so the link keeps a real text accessible name and
+   the icon is aria-hidden. The filter forces the whole glyph to black:
+   brightness(0) collapses every channel to zero, so the mark lands on the
+   page's ink regardless of the colours in the source SVG, and saturate(0)
+   guarantees no residual hue survives. Without it the official mark renders
+   LinkedIn blue, which is the one colour on this page that belongs to neither
+   the paper nor the ink. */
+.btn--icon {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn__icon {
+  display: block;
+  flex: none;
+  filter: brightness(0) saturate(0);
+}
+
+.btn--solid .btn__icon {
+  /* On the filled button the ink is inverted, so the glyph has to follow or
+     it disappears into the background. */
+  filter: brightness(0) invert(1);
+}
+
 .btn {
   display: inline-block;
   padding: 10px 20px;
@@ -1237,21 +1264,23 @@ body::before {
   padding: 0;
 }
 
-/* The name inside the lens is sized to the DISC, not shared with the base.
+  /* The name inside the lens deliberately shares the base layer's size
+     rather than being fitted to the disc.
 
-   This is the one place the two layers deliberately differ. With the name in
-   the scope, equal sizes stopped being possible: at the shared size the name
-   rendered 415px of glyphs inside a 236px disc, so the lens clipped it to
-   about 8 of its 14 characters — the effect read as a bug rather than as a
-   lens. The queries in the base layer still take the shared size, because
-   they are the string that has to span the viewport.
+     Fitting it was possible and is what this replaced: a --lens-name-size
+     computed from the measured diameter, which kept every glyph inside the
+     circle. But that made the name a caption for the lens — 10px to 16px
+     against the queries' 13px to 56px — and a magnifier is not a caption.
 
-   --lens-name-size is computed in App.tsx from the measured disc diameter
-   (see the comment there). It has to be a length rather than a number because
-   Goldeneye's own fontSize prop writes --pui-goldeneye-headline-size, which
-   BOTH layers read. */
+     At the shared size the name is much wider than the disc (470px of glyphs
+     in a 165px circle at 1440), so the lens shows a fragment of it. That is
+     the effect working, not a bug: the same clipping the queries had when
+     THEY were the reveal, and the reason the component is a magnifier at all
+     rather than a tooltip. Both layers are the same type at the same size
+     swapping under the circle, which is what makes it read as one image
+     changing rather than as two pieces of text. */
 .footer__lens .pui-goldeneye__scope .pui-goldeneye__headline {
-  font-size: var(--lens-name-size, 24px);
+  font-size: var(--pui-goldeneye-headline-size);
 }
 
 /* The lens disc is orange, not ink.

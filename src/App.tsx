@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type CSSProperties } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   EyebrowPill,
   GlassCard,
@@ -162,12 +162,17 @@ const MARQUEE: MarqueeItem[] = tools.map((t) => {
    `scopeSize` is a DIAMETER, not a radius — the component divides it by two
    internally, so the 300 first passed here was a 150px radius.
 
-   The diameter is tied to the footer's own HEIGHT, not the viewport. The
-   footer is a fixed 289px at every width, so a viewport-scaled disc was
-   still wider than the box it sits in at 390px and up — measured 460px
-   against a 289px footer, clipped top and bottom. Sizing to the measured
-   footer height with a small inset keeps the disc wholly inside the paper at
-   every width, and keeps the reveal from bleeding past the border.
+   The diameter is tied to the footer's own HEIGHT, not the viewport, so the
+   disc can never be wider than the box it sits in — a viewport-scaled disc
+   measured 460px against a 289px footer and was clipped top and bottom. The
+   90px floor is below the footer's own 130px minimum for the same reason: a
+   floor above it would reintroduce the clipping this measurement prevents.
+
+   Both layers share one font size, and the name inside the lens is WIDER than
+   the disc, so the circle shows a fragment of it. That is the effect, not a
+   fault: it is what the queries did when they were the reveal, and a lens
+   that showed its whole subject would be a tooltip. See the scope-headline
+   rule in app.css.
 
    Unlike the ASCII canvas this replaced, there is no rAF loop: the lens only
    moves in direct response to pointer movement, so it is not autonomous motion
@@ -196,27 +201,7 @@ function FooterLens() {
   }, []);
 
   return (
-    <div
-      ref={host}
-      className="footer__lens"
-      style={
-        {
-          // The name's size inside the lens, as a length the stylesheet can
-          // apply to the scope's headline alone. Goldeneye's own `fontSize`
-          // prop cannot be used for this: it sets --pui-goldeneye-headline-size,
-          // which both layers read, so it would shrink the base queries too and
-          // leave them stranded in the middle of the viewport.
-          //
-          // Space Mono advances 0.6em per glyph, so the name's rendered width
-          // is len * 0.6 * size. Solving for a width of 78% of the disc leaves
-          // a margin at each edge, because the lens is a circle and a name
-          // spanning the full diameter would have its first and last glyphs
-          // clipped by the curve. The 0.78 is measured against the disc, not
-          // the viewport, so the name always fits the lens it is inside.
-          "--lens-name-size": `${Math.round((diameter * 0.78) / (profile.name.length * 0.6))}px`,
-        } as CSSProperties
-      }
-    >
+    <div ref={host} className="footer__lens">
       <Goldeneye
         className="footer__lens-inner"
         text_default={REVEAL_QUERIES}
@@ -236,13 +221,20 @@ export default function App() {
 
   /* Back to top.
 
-     The scroll is animated, but the destination is asserted twice: once up
-     front, and again once the animation should have finished. A smooth scroll
-     is cancellable, and on a long page it runs long enough that a stray wheel
-     or touch event, a layout shift from the IDE screen swapping, or the
-     browser clamping the target can all leave it short of the top. The final
-     assignment is what makes the button reliable rather than merely usually
-     correct, and it costs one property write.
+     One scrollTo, smooth, and nothing else. This used to assert the
+     destination three more times — a synchronous root.scrollTop = 0, then a
+     900ms timer that checked scrollY and jumped if it was still above 0 — and
+     that is exactly what produced the pause-then-jerk: the synchronous
+     assignment landed in the same frame as the smooth scroll was starting and
+     interrupted it, so the page crept upward and stopped, and then the timer
+     fired a second, instant scroll for the remaining distance. Two scrolls
+     fighting over one position, not one smooth move.
+
+     There is nothing to recover from. `behavior: "smooth"` is honoured by
+     every browser this site targets, and when it is not, the scroll still
+     happens — just without the animation. The only thing the old guards
+     bought was insurance against a scroll the platform already performs, at
+     the cost of making every scroll visibly wrong.
 
      Shown only once the page has scrolled past a screenful, so it never
      covers the hero on the way in. The listener is passive because it does
@@ -261,19 +253,7 @@ export default function App() {
   }, []);
 
   const scrollToTop = () => {
-    const root = document.documentElement;
     window.scrollTo({ top: 0, left: 0, behavior: "smooth" });
-    // Covers browsers that ignore the options object.
-    root.scrollTop = 0;
-
-    // Assert the destination once the animation has had time to finish.
-    window.setTimeout(() => {
-      if (window.scrollY > 0) {
-        window.scrollTo({ top: 0, left: 0, behavior: "auto" });
-        root.scrollTop = 0;
-        window.scrollTo(0, 0);
-      }
-    }, 900);
   };
 
   /* Alternate the two IDE screens.
@@ -397,11 +377,34 @@ export default function App() {
               Experience
             </a>
             <a
-              className="btn"
+              className="btn btn--icon"
               href={profile.linkedin}
               target="_blank"
               rel="noreferrer"
             >
+              {/* The real LinkedIn mark, inlined rather than pulled from a
+                  font or an icon package. The official brand glyph is a solid
+                  "in" on a rounded square; the square is kept and the whole
+                  thing is forced to black by the .btn--icon filter, so the
+                  logo reads as monochrome ink like every other element on the
+                  page instead of introducing LinkedIn blue into the palette.
+
+                  aria-hidden because the link's accessible name comes from the
+                  visible text beside it — announcing "LinkedIn" twice helps
+                  nobody. */}
+              <svg
+                className="btn__icon"
+                viewBox="0 0 24 24"
+                width="18"
+                height="18"
+                aria-hidden="true"
+                focusable="false"
+              >
+                <path
+                  fill="currentColor"
+                  d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.225 0z"
+                />
+              </svg>
               LinkedIn
             </a>
             <a className="btn btn--solid" href={`mailto:${profile.email}`}>
