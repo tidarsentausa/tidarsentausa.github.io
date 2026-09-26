@@ -1182,11 +1182,18 @@ body::before {
 
    A pseudo-element with a z-index above the lens puts the rule back on top
    without moving the footer's edge, so the box the disc is measured against is
-   unchanged. */
+   unchanged.
+
+   It sits at bottom: 100% — i.e. ON the footer's top edge, outside it — rather
+   than inset into the top 3px of the panel. A rule drawn inside the panel
+   covers the top of the orange rather than capping it, so the footer's own
+   colour starts 3px below where the box does; the two edges then read as
+   different lines and the footer looks inset rather than finished. Sitting on
+   the boundary, the rule is the edge. */
 .footer::before {
   content: "";
   position: absolute;
-  inset: 0 0 auto 0;
+  inset: auto 0 100% 0;
   height: 3px;
   background: var(--line);
   /* Above .footer__lens (z-index 0) but below nothing else in the footer. */
@@ -1198,6 +1205,18 @@ body::before {
   position: relative;
   isolation: isolate;
   background: var(--paper);
+  /* Breathing room above the footer, so the workbench panel does not sit
+     flush against it. The two were touching: measured 0px between the
+     workbench's bottom edge and the footer's top.
+
+     This has to clear the disc as well as the panel. The lens bleeds
+     LENS_BLEED (56px) above the footer, so anything less than that and the
+     circle is still crossing the workbench when it starts. 72px leaves the
+     disc's full bleed inside the gap with 16px to spare, and the disc's
+     overflow is visible so the circle passes over the workbench's bottom
+     edge rather than being cut at it — which is the intended effect, the
+     lens overlapping the content above it. */
+  margin-top: 72px;
   /* The footer's height, named once so the type inside it can be derived from
      it. A vh-based font size alone drifts out of step with this clamp: at
      320x568 the box sits on its 130px floor while 1.26vh measures only 7px,
@@ -1278,7 +1297,23 @@ body::before {
    point of the change. Everything else below is left at the library's
    defaults. */
 .footer__lens {
+  /* Instrument Serif, the library's own serif variant, selected through the
+     variable the library already reads rather than by hardcoding a family or
+     by passing the fontFamily prop (which overrides this variable outright and
+     was what pinned Space Mono here before).
+
+     --pui-bg and --pui-fg are the library's two colours: the base layer paints
+     --pui-bg behind --pui-fg text, and the scope inverts the pair inside the
+     circle. Repointed at this page's accent and ink so the panel is orange
+     rather than the library's near-black, which had made the footer's ink top
+     border invisible — rgb(20,20,26) on rgb(8,8,11) is a difference of 12/255
+     in red and nothing to the eye. The scope still inverts to ink, which is
+     what keeps the revealed name legible: ink on orange measures 5.7:1, and
+     the inversion is what makes the disc read as a lens rather than as a
+     second panel. */
   --pui-goldeneye-font: var(--pui-font-serif);
+  --pui-bg: var(--accent);
+  --pui-fg: var(--ink);
 }
 
 /* The last section sits above the IDE window, whose own container supplies
