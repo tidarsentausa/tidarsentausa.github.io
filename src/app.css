@@ -1233,14 +1233,16 @@ body::before {
 
    Left-aligned rather than centred, so the offset hack that centred a
    full-bleed single line (margin-left: 50% plus translateX(-50%)) is gone.
-   The wordmark is still a 100vw breakout, so the name can still run past the
-   right edge and read as a bleed, but it now starts hard against the left.
+   The wordmark is still a 100vw breakout, so the two lines share one left
+   edge with the rest of the page regardless of how wide they are.
 
-   font-size is larger than the old 18.5vw because each line is now roughly
-   half as long: at 18.5vw a single word would occupy well under half the
-   viewport and the mark would read as small print. 27vw puts the longer word
-   ("SENTAUSA", 8 glyphs) at roughly the width of the old full name, so the
-   two-line block carries the same visual mass as the one-line version did.
+   13.5vw is half the 27vw this block was set at when the mark was meant to
+   dominate the footer. It still spans well past the middle of the viewport at
+   desktop widths (SENTAUSA, 8 glyphs, runs to roughly 65vw), so it reads as a
+   deliberate mark rather than a caption, but it no longer competes with the
+   nav links above it. Because it no longer reaches the right edge, the box is
+   kept at 100vw purely to hold the shared left edge; overflow: hidden on the
+   wordmark is now belt-and-braces rather than load-bearing.
 
    line-height is 0.84, tightened from 0.82 because two lines stack their
    leading twice; at the looser value the pair opens a visible gap and stops
@@ -1259,7 +1261,7 @@ body::before {
   display: block;
   width: 100%;
   font-family: var(--mono-display);
-  font-size: 27vw;
+  font-size: 13.5vw;
   font-weight: 700;
   line-height: 0.84;
   letter-spacing: -0.055em;
