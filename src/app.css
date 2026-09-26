@@ -1,0 +1,918 @@
+/* Neobrutalist resume. Hard edges, offset shadows, monospace, no gradients.
+
+   Monospace throughout, but deliberately not one voice: a neo-grotesque mono
+   for the body, a condensed mono for display, and a slab-ish mono for the
+   numeric stats, so the page has typographic hierarchy without leaving the
+   monospace register. */
+
+@import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Space+Mono:wght@400;700&family=JetBrains+Mono:wght@400;700;800&display=swap");
+
+:root {
+  --ink: #14141a;
+  --paper: #f4f1ea;
+  --surface: #ffffff;
+  --line: #14141a;
+  --accent: #ff4f18;
+  --accent-2: #2b5cff;
+  --muted: #5c5c66;
+
+  /* Three monospace voices. */
+  --mono-body: "IBM Plex Mono", "Cascadia Mono", ui-monospace, monospace;
+  --mono-display: "Space Mono", "IBM Plex Mono", ui-monospace, monospace;
+  --mono-stats: "JetBrains Mono", "IBM Plex Mono", ui-monospace, monospace;
+
+  --shadow: 6px 6px 0 var(--line);
+  --shadow-sm: 4px 4px 0 var(--line);
+  --max: 1120px;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+*,
+*::before,
+*::after {
+  border-radius: 0 !important;
+}
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--mono-body);
+  font-size: 15px;
+  font-weight: 400;
+  line-height: 1.65;
+  font-variant-ligatures: none;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Global mono enforcement, including anything a component injects. */
+body * {
+  font-family: var(--mono-body);
+  border-radius: 0 !important;
+}
+
+/* A faint grid, so the page reads as graph paper. */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(20, 20, 26, 0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(20, 20, 26, 0.045) 1px, transparent 1px);
+  background-size: 28px 28px;
+}
+
+.page {
+  position: relative;
+  z-index: 1;
+  max-width: var(--max);
+  margin: 0 auto;
+  padding: 0 24px 80px;
+}
+
+/* ---------- hero ---------- */
+
+.hero {
+  padding: 64px 0 36px;
+  text-align: left;
+}
+
+.hero__name {
+  margin: 20px 0 6px;
+  font-family: var(--mono-display);
+  font-size: clamp(2.6rem, 8vw, 4.75rem);
+  line-height: 0.95;
+  letter-spacing: -0.045em;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.hero__roles {
+  margin: 0;
+  font-family: var(--mono-display);
+  font-size: 1.05rem;
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.hero__meta {
+  margin: 10px 0 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.hero__cta {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin: 28px 0 48px;
+}
+
+.btn {
+  display: inline-block;
+  padding: 10px 20px;
+  border: 2px solid var(--line);
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  text-decoration: none;
+  box-shadow: var(--shadow-sm);
+  transition:
+    transform 90ms ease,
+    box-shadow 90ms ease;
+}
+
+.btn:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0 var(--line);
+}
+
+.btn:active {
+  transform: translate(2px, 2px);
+  box-shadow: 2px 2px 0 var(--line);
+}
+
+.btn--solid {
+  background: var(--accent);
+  color: #fff;
+}
+
+/* ---------- stats ---------- */
+
+/* One line per stat: value, suffix and label sit on a single baseline row.
+   The label must never clip, so the grid track is sized off its content and
+   the whole row is allowed to wrap onto a second line if it truly runs out. */
+/* Four cards, always one row. auto-fit was leaving 3 + 1 orphan, so pin the
+   track count and let the type shrink instead. */
+.hero__stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 2px;
+  border: 2px solid var(--line);
+  background: var(--line);
+}
+
+@media (max-width: 900px) {
+  .hero__stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 520px) {
+  .hero__stats {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Height-matched to the logo band below (84px including the strip borders), so
+   the two read as one horizontal system.
+
+   height is fixed rather than min-height: with min-height the 16px vertical
+   padding still added on top and pushed the strip to 117px. Padding is
+   horizontal-only, and the row is centred by align-items. */
+.stat {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  height: 79px;
+  padding: 0 14px;
+  background: var(--surface);
+  white-space: nowrap;
+}
+
+.stat .pui-stat,
+.stat__suffix {
+  font-family: var(--mono-stats);
+  font-size: 1.75rem;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.05em;
+  flex-shrink: 0;
+}
+
+.stat__suffix {
+  color: var(--accent);
+}
+
+.stat__label {
+  margin: 0;
+  color: var(--muted);
+  font-family: var(--mono-body);
+  font-size: 0.7rem;
+  font-weight: 500;
+  line-height: 1.3;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  white-space: normal;
+  min-width: 0;
+}
+
+/* ---------- brands ---------- */
+
+/* The .logos block lives further down, with the marquee token overrides. */
+
+.marquee__word {
+  font-family: var(--mono-display);
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* All marks monochrome for a consistent strip. simple-icons ships black
+   paths already, so this only affects the one raster (Screaming Frog), which
+   is desaturated here to match. */
+.logos {
+  --pui-logo-filter: grayscale(1) contrast(1.1);
+  --pui-logo-filter-hover: grayscale(1) contrast(1.1);
+  --pui-logo-text: var(--ink);
+  margin: 40px 0 0;
+  padding: 10px 0;
+  border-top: 2px solid var(--line);
+  border-bottom: 2px solid var(--line);
+  background: var(--surface);
+}
+
+.logos img,
+.pui-marquee__item img {
+  height: 20px;
+  width: auto;
+  max-width: none;
+  object-fit: contain;
+  opacity: 1;
+  transition: none;
+  cursor: default;
+}
+
+/* Raster marks are square, so give them a square box to sit in. Without this
+   they align on their top edge and look larger than the vector marks. They get
+   a couple of extra pixels because a raster at the vector size reads as mush
+   (the Clarity mark loses its facets entirely). */
+.logos img[src$=".png"],
+.pui-marquee__item img[src$=".png"] {
+  width: 24px;
+  height: 24px;
+}
+
+.pui-marquee__item img:hover {
+  opacity: 1;
+}
+
+/* The library's fade is a mask-image on the marquee box, and a mask clips
+   everything that overflows it, including the hover label. Replaced with two
+   gradient overlays that fade the edges without clipping.
+
+   Overflow stays hidden on the track so logos remain contained by the strip,
+   which is what the mask was doing. The hover label is therefore painted
+   INSIDE the strip's own padding, below the mark, where nothing clips it. */
+.logos .pui-marquee {
+  overflow: hidden;
+  -webkit-mask-image: none;
+  mask-image: none;
+  position: relative;
+}
+
+/* Vertical rhythm of the band.
+
+   The hover label hangs below the mark, so the track needs clearance for it or
+   overflow:hidden clips the label. Using SYMMETRIC top/bottom padding is what
+   makes the marks sit optically centred: asymmetric padding would push them
+   toward the top border. Total band height stays modest: 20px mark + 2x18px. */
+/* The library loops with translateX(-50%) over a track it renders twice. For
+   that to be seamless, one copy of the items must be at least as wide as the
+   visible window. With a short list the two copies together are narrower than
+   the window, so the loop exposes empty space.
+
+   The fix is to repeat the item list enough times that half the track always
+   covers the full width. Repeat count is derived from the measured item width
+   in JS, and applied as extra clones on the track. */
+.logos .pui-marquee__track {
+  align-items: center;
+  padding-top: 18px;
+  padding-bottom: 18px;
+  will-change: transform;
+}
+
+.logos .pui-marquee::before,
+.logos .pui-marquee::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  /* Cover the full band, padding included. The label is centered under its
+     own mark, so the fade never overlaps it in practice. */
+  bottom: 0;
+  width: 70px;
+  z-index: 10;
+  pointer-events: none;
+}
+
+.logos .pui-marquee::before {
+  left: 0;
+  background: linear-gradient(90deg, var(--surface), transparent);
+}
+
+.logos .pui-marquee::after {
+  right: 0;
+  background: linear-gradient(270deg, var(--surface), transparent);
+}
+
+/* Anchor for the hover label. It must not clip its own pseudo-element. */
+.pui-marquee__item {
+  position: relative;
+  overflow: visible;
+}
+
+.pui-marquee__item:hover::after {
+  content: attr(data-label);
+  position: absolute;
+  left: 50%;
+  /* Sit inside the band's lower padding rather than hanging below it, since
+     the track clips at its own bounds. */
+  top: calc(100% - 2px);
+  transform: translateX(-50%);
+  z-index: 20;
+  padding: 1px 6px;
+  border: 2px solid var(--line);
+  background: var(--ink);
+  color: var(--paper);
+  font-family: var(--mono-body);
+  font-size: 0.6rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  line-height: 1.5;
+  white-space: nowrap;
+  pointer-events: none;
+  box-shadow: 2px 2px 0 var(--accent);
+  opacity: 1;
+}
+
+/* ---------- sections ---------- */
+
+.section {
+  margin: 72px 0;
+}
+
+.section__title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 20px;
+  padding-bottom: 8px;
+  border-bottom: 3px solid var(--line);
+  font-family: var(--mono-display);
+  font-size: 1.05rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+/* ---------- roles ---------- */
+
+.roles {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.role {
+  border: 2px solid var(--line);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  backdrop-filter: none;
+  background-color: var(--surface);
+}
+
+.role__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  width: 100%;
+  padding: 16px 18px;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+/* Hover feedback across the entire header row, not just the text. The
+   negative margin pulls the tint to the card edges so it reads as one block. */
+.role__head {
+  position: relative;
+  transition: background 120ms ease;
+}
+
+.role__head::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--accent);
+  opacity: 0;
+  transition: opacity 120ms ease;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.role__head:hover::after {
+  opacity: 0.1;
+}
+
+.role__head > * {
+  position: relative;
+  z-index: 1;
+}
+
+.role__company {
+  margin: 0;
+  font-family: var(--mono-display);
+  font-size: 1.05rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.01em;
+}
+
+.role__title {
+  margin: 3px 0 0;
+  color: var(--muted);
+  font-size: 0.88rem;
+}
+
+.role__period {
+  flex-shrink: 0;
+  padding: 2px 8px;
+  border: 2px solid var(--line);
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--mono-stats);
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.role__body {
+  margin: 0 18px;
+  padding: 16px 0 20px;
+  border-top: 2px dashed var(--line);
+}
+
+.role__blurb {
+  margin: 0 0 14px;
+  color: var(--muted);
+  font-size: 0.9rem;
+  max-width: 76ch;
+}
+
+.role__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-width: 84ch;
+}
+
+/* Bullets as hard squares, matching the corners. */
+.role__list li {
+  position: relative;
+  padding-left: 20px;
+  font-size: 0.92rem;
+}
+
+.role__list li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.55em;
+  width: 9px;
+  height: 9px;
+  background: var(--accent);
+  border: 1.5px solid var(--line);
+}
+
+.role__link,
+.project a {
+  display: inline-block;
+  margin-top: 16px;
+  color: var(--accent-2);
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-decoration: none;
+  border-bottom: 2px solid currentColor;
+}
+
+/* ---------- projects and panels ---------- */
+
+.projects,
+.split {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+.project,
+.panel,
+.engagement,
+.case {
+  border: 2px solid var(--line);
+  background: var(--surface);
+  backdrop-filter: none;
+  background-color: var(--surface);
+  box-shadow: var(--shadow);
+}
+
+.project,
+.panel,
+.engagement {
+  padding: 18px;
+}
+
+.project h3,
+.panel h3,
+.engagement h3 {
+  margin: 0 0 8px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.project p,
+.panel p,
+.engagement p {
+  margin: 0 0 6px;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.panel__lead {
+  color: var(--ink) !important;
+  font-weight: 700;
+  font-size: 1rem !important;
+}
+
+.panel__meta {
+  font-size: 0.85rem !important;
+}
+
+.summary .panel p {
+  max-width: 80ch;
+  font-size: 0.95rem;
+}
+
+/* ---------- engagement ---------- */
+
+.engagement__list {
+  margin: 0 0 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.engagement__list dt {
+  font-weight: 700;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.engagement__list dd {
+  margin: 2px 0 0;
+  color: var(--muted);
+  font-size: 0.88rem;
+}
+
+.engagement__note {
+  margin: 0;
+  padding-top: 14px;
+  border-top: 2px dashed var(--line);
+  color: var(--ink) !important;
+  font-size: 0.85rem !important;
+  font-weight: 700;
+}
+
+/* ---------- skills ---------- */
+
+.skills {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 18px;
+  align-items: start;
+}
+
+@media (max-width: 880px) {
+  .skills {
+    grid-template-columns: 1fr;
+  }
+}
+
+.skills__list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.skillgroup {
+  border: 2px solid var(--line);
+  background: var(--surface);
+  backdrop-filter: none;
+  background-color: var(--surface);
+  box-shadow: var(--shadow-sm);
+  padding: 16px 18px;
+}
+
+.skillgroup header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid var(--line);
+}
+
+.skillgroup h3 {
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.skillgroup__level {
+  padding: 1px 7px;
+  border: 2px solid var(--line);
+  background: var(--accent);
+  color: #fff;
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  white-space: nowrap;
+}
+
+.skillgroup ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.skillgroup li {
+  padding: 4px 9px;
+  border: 2px solid var(--line);
+  background: var(--paper);
+  color: var(--ink);
+  font-size: 0.78rem;
+}
+
+/* ---------- case study ---------- */
+
+.case {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 0;
+  padding: 0;
+  align-items: stretch;
+}
+
+.case__col {
+  padding: 20px;
+}
+
+.case__head {
+  margin: 0 0 4px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--muted);
+}
+
+.case__lede {
+  margin: 0 0 12px;
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.case__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 0.88rem;
+  color: var(--muted);
+}
+
+.case__arrow {
+  display: flex;
+  align-items: center;
+  padding: 0 4px;
+  border-left: 2px dashed var(--line);
+  border-right: 2px dashed var(--line);
+  background: var(--paper);
+  font-size: 1.6rem;
+  font-weight: 700;
+}
+
+@media (max-width: 720px) {
+  .case {
+    grid-template-columns: 1fr;
+  }
+
+  .case__arrow {
+    justify-content: center;
+    padding: 8px 0;
+    border: 0;
+    border-top: 2px dashed var(--line);
+    border-bottom: 2px dashed var(--line);
+  }
+}
+
+/* ---------- library component overrides ---------- */
+
+/* StickyBanner: flat strip, hard border. */
+.pui-stickybanner,
+[class*="pui-sticky"] {
+  border-radius: 0 !important;
+  border-bottom: 2px solid var(--line);
+  background: var(--ink) !important;
+  color: var(--paper) !important;
+  font-family: inherit;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+/* EyebrowPill: square tag. */
+[class*="pui-eyebrow"] {
+  border-radius: 0 !important;
+  border: 2px solid var(--line) !important;
+  background: var(--surface) !important;
+  color: var(--ink) !important;
+  box-shadow: var(--shadow-sm) !important;
+  font-family: inherit;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+/* MockIDE: keep the code, lose the rounded glass. */
+[class*="pui-mockide"],
+[class*="pui-ide"] {
+  border-radius: 0 !important;
+  border: 2px solid var(--line) !important;
+  box-shadow: var(--shadow) !important;
+  font-family: inherit;
+}
+
+/* BigBack's wordmark is an SVG using textLength + spacingAndGlyphs, which
+   stretches short names into a squashed band. CSS cannot undo textLength, so
+   hide the SVG and paint the name as real text at viewport width instead.
+   The name is injected from React via the --wm custom property. */
+.pui-bigback {
+  border-top: 3px solid var(--line);
+  background: var(--paper) !important;
+  color: var(--ink) !important;
+  padding: 40px 0 24px;
+  overflow: hidden;
+}
+
+.pui-bigback__svg {
+  display: none;
+}
+
+/* Decorative terminal, full-bleed below the content column. */
+.workbench {
+  position: relative;
+  z-index: 1;
+  max-width: var(--max);
+  margin: 0 auto;
+  padding: 0 24px 72px;
+}
+
+/* True edge-to-edge wordmark. The footer is a full-width block, so break out
+   of the page container and let the name span the whole viewport, clipped at
+   both edges. font-size is tuned so the string slightly overflows, which is
+   what makes it read as a bleed rather than a centered caption. */
+.pui-bigback__wordmark {
+  display: block;
+  margin: 28px 0 8px;
+  width: 100vw;
+  margin-left: 50%;
+  transform: translateX(-50%);
+  overflow: hidden;
+}
+
+.pui-bigback__wordmark::before {
+  content: var(--wm, "");
+  display: block;
+  width: 100%;
+  font-family: var(--mono-display);
+  font-size: 18.5vw;
+  font-weight: 700;
+  line-height: 0.82;
+  letter-spacing: -0.055em;
+  text-transform: uppercase;
+  text-align: center;
+  white-space: nowrap;
+  opacity: 0.15;
+}
+
+/* Nav columns and the baseline row both centered. */
+.pui-bigback__cols {
+  display: flex;
+  justify-content: center;
+  gap: 56px;
+  flex-wrap: wrap;
+  text-align: center;
+}
+
+.pui-bigback__heading {
+  font-family: var(--mono-body);
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--muted);
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+.pui-bigback__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: center;
+}
+
+.pui-bigback__link {
+  color: var(--ink) !important;
+  font-family: var(--mono-body);
+  font-size: 0.82rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  text-decoration: none;
+  border-bottom: 2px solid transparent;
+}
+
+.pui-bigback__link:hover {
+  border-bottom-color: var(--accent);
+}
+
+.pui-bigback__base {
+  justify-content: center;
+  text-align: center;
+  font-family: var(--mono-body);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+}
+
+.pui-bigback__social {
+  display: inline-flex;
+  gap: 18px;
+  justify-content: center;
+}
+
+/* GlassCard is still the layout primitive, so neutralize its glass entirely. */
+.pui-glass,
+[class*="pui-glasscard"] {
+  backdrop-filter: none !important;
+  background-color: var(--surface) !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  .btn {
+    transition: none;
+  }
+}
