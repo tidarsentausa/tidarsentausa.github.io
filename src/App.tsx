@@ -148,27 +148,50 @@ const MARQUEE: MarqueeItem[] = tools.map((t) => {
    size. Sweeping the pointer across the name therefore reads as the name
    resolving into the queries underneath it.
 
-   The reveal string is a single line of the search terms this resume is
-   actually about, so the lens shows the work rather than a placeholder.
+   `scopeSize` is a DIAMETER, not a radius — the component divides it by two
+   internally, so the 300 first passed here was a 150px radius.
 
-   Both texts share one font-size custom property by default, which does not
-   work here: the queries are far longer than the name, so sizing them together
-   would either overflow the reveal or shrink the name to a caption. The scope's
-   headline is therefore sized down separately in CSS.
+   The diameter is tied to the footer's own HEIGHT, not the viewport. The
+   footer is a fixed 289px at every width (64px of BigBack padding either side
+   of a ~160px nav block, plus the border), so a viewport-scaled disc was
+   still wider than the box it sits in at 390px and up — measured 460px
+   against a 289px footer, clipped top and bottom. Sizing to the measured
+   footer height with a small inset keeps the disc wholly inside the paper at
+   every width, and keeps the reveal from bleeding past the border.
 
    Unlike the ASCII canvas this replaced, there is no rAF loop: the lens only
    moves in direct response to pointer movement, so it is not autonomous motion
    and stays under prefers-reduced-motion. */
 function FooterLens() {
+  // The diameter is a JS prop, so it cannot be a CSS clamp. Measured from the
+  // element itself with a ResizeObserver rather than from window.innerWidth:
+  // the constraint is the footer's box, and it is the footer that can change.
+  const host = useRef<HTMLDivElement>(null);
+  const [diameter, setDiameter] = useState(280);
+
+  useEffect(() => {
+    const el = host.current;
+    if (!el) return;
+    const ro = new ResizeObserver(([entry]) => {
+      const h = entry.contentRect.height;
+      // Leave a few px of slack so the disc's edge never touches the border.
+      setDiameter(Math.max(160, Math.min(460, h - 24)));
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
   return (
-    <Goldeneye
-      className="footer__lens"
-      text_default={profile.name}
-      text_reveal={REVEAL_QUERIES}
-      pattern="0 1 0 1 "
-      scopeSize={300}
-      fontFamily="'Space Mono', 'IBM Plex Mono', ui-monospace, monospace"
-    />
+    <div ref={host} className="footer__lens">
+      <Goldeneye
+        className="footer__lens-inner"
+        text_default={profile.name}
+        text_reveal={REVEAL_QUERIES}
+        pattern="0 1 0 1 "
+        scopeSize={diameter}
+        fontFamily="'Space Mono', 'IBM Plex Mono', ui-monospace, monospace"
+      />
+    </div>
   );
 }
 
@@ -573,27 +596,7 @@ export default function App() {
         <FooterLens />
 
         <div className="footer__content">
-          <BigBack
-            company={profile.name}
-            columns={columns}
-            /* Two custom properties, one per line.
-
-               A newline inside the value was the obvious route and it silently
-               fails: a literal line break inside a CSS string is a syntax
-               error, so the declaration is dropped and --wm computes to
-               nothing, leaving an empty wordmark. The \\A escape survives
-               parsing but renders as literal characters, not a break.
-
-               So the two lines are kept as separate properties and the CSS
-               paints one per pseudo-element. Splitting on the first space
-               only, so a three-part name keeps its tail intact on line two. */
-            style={
-              {
-                "--wm-1": `"${profile.name.split(" ")[0]}"`,
-                "--wm-2": `"${profile.name.split(" ").slice(1).join(" ")}"`,
-              } as CSSProperties
-            }
-          />
+          <BigBack company={profile.name} columns={columns} />
         </div>
       </div>
 

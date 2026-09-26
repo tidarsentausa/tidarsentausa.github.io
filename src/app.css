@@ -1155,6 +1155,11 @@ body::before {
 
 /* The lens fills the footer.
 
+   .footer__lens is a plain wrapper that exists only to be measured — the
+   diameter is a JS prop (it has to be, Goldeneye takes a number) and it is
+   derived from this box's height with a ResizeObserver. The component itself
+   is .footer__lens-inner and does the actual filling.
+
    The library defaults to min-height: 360px and a crosshair cursor. The height
    is overridden so the lens matches the footer rather than forcing it taller,
    and the crosshair is kept: it advertises that the footer is interactive
@@ -1163,6 +1168,10 @@ body::before {
   position: absolute;
   inset: 0;
   z-index: 0;
+  pointer-events: auto;
+}
+
+.footer__lens-inner {
   width: 100%;
   height: 100%;
   min-height: 0;
@@ -1197,10 +1206,9 @@ body::before {
 
    The wordmark is painted by a ::before/::after pseudo-element rather than by
    the element's own text, so the shadow has to be set on those too — a
-   text-shadow on .pui-bigback__wordmark itself would apply to nothing. */
-.footer__content .pui-bigback__link,
-.footer__content .pui-bigback__wordmark::before,
-.footer__content .pui-bigback__wordmark::after {
+   text-shadow on .pui-bigback__wordmark itself would apply to nothing. That
+   rule is now moot: the wordmark is display: none. */
+.footer__content .pui-bigback__link {
   text-shadow:
     1px 0 0 var(--paper),
     -1px 0 0 var(--paper),
@@ -1227,14 +1235,20 @@ body::before {
 }
 
 /* The reveal is a single line of query text spanning the full width, so its
-   length is what caps the readable size. 4.05vw is the largest size at which
-   the 40-character string still fits inside the viewport at every width
-   measured (320/390/560/768/1440): 13px at 320 up to 58px at 1440. The base
-   and the scope share one --pui-goldeneye-headline-size by default, so the
-   scope's headline is sized down separately here; the name keeps the size the
-   wordmark rules below set. */
+   length caps how much of it can be legible at once. The size is chosen
+   against the size of the lens window rather than the viewport:
+
+   At 2.6vw a chord across the middle of a 460px window shows 24 characters —
+   a whole term, "seo · digital marketing" — where the previous 4.05vw showed
+   only "seo · digita". The clamp's 13px floor is what makes that survive on a
+   phone: a flat 2.6vw measures 8.3px at a 320px viewport, which is not
+   readable at any size of window. The 37px ceiling stops it ballooning on a
+   wide desktop.
+
+   The base and the scope share one --pui-goldeneye-headline-size by default,
+so the scope's headline is sized down separately here. */
 .footer__lens .pui-goldeneye__scope .pui-goldeneye__headline {
-  font-size: 4.05vw;
+  font-size: clamp(13px, 2.6vw, 37px);
   letter-spacing: -0.02em;
   padding: 0;
 }
@@ -1258,15 +1272,21 @@ body::before {
   background: transparent !important;
 }
 
-/* BigBack's wordmark is an SVG using textLength + spacingAndGlyphs, which
-   stretches short names into a squashed band. CSS cannot undo textLength, so
-   hide the SVG and paint the name as real text at viewport width instead.
-   The name is injected from React via the --wm custom property. */
+/* BigBack is now just the footer's link rail: its wordmark is display: none and
+   its baseline row is hidden, so the only thing it contributes is the nav
+   columns. The padding is raised from 40px/24px to 64px/64px because the
+   magnifier needs somewhere to live — with the wordmark gone the footer
+   collapsed to 225px, less than the 230px radius of the scope, so a lens
+   centred on the name spilled out through the top and bottom edges. 64px of
+   padding either side of a 64px nav gives ~350px, which holds the disc.
+
+   The name is no longer injected from React; Goldeneye's base layer supplies
+   it as text_default. */
 .pui-bigback {
   border-top: 3px solid var(--line);
   background: var(--paper) !important;
   color: var(--ink) !important;
-  padding: 40px 0 24px;
+  padding: 64px 0;
   overflow: hidden;
 }
 
@@ -1291,63 +1311,21 @@ body::before {
   padding: 72px 24px 72px;
 }
 
-/* Two lines, flush left.
+/* The BigBack wordmark is removed entirely.
 
-   One line per pseudo-element rather than a newline inside a single value: a
-   literal line break in a CSS string is a syntax error, so the declaration
-   would be dropped and the mark would render empty. The \\A escape parses but
-   paints literal characters. Two properties, two pseudo-elements, no
-   whitespace trickery.
+   It painted the name as a 13.5vw two-line block at 0.15 opacity, and it was
+   fighting the magnifier: the lens reveals the search terms inside a scope
+   that is only ~300px across, and a full-width wordmark sitting on top of it
+   meant the reveal was never the thing you saw first. The name now appears
+   only where the interaction is — as Goldeneye's base layer, revealed into
+   the queries under the cursor.
 
-   ::after is display:block to force the second line onto its own row; inline
-   pseudo-elements would otherwise sit side by side on one line.
-
-   Left-aligned rather than centred, so the offset hack that centred a
-   full-bleed single line (margin-left: 50% plus translateX(-50%)) is gone.
-   The wordmark is still a 100vw breakout, so the two lines share one left
-   edge with the rest of the page regardless of how wide they are.
-
-   13.5vw is half the 27vw this block was set at when the mark was meant to
-   dominate the footer. It still spans well past the middle of the viewport at
-   desktop widths (SENTAUSA, 8 glyphs, runs to roughly 65vw), so it reads as a
-   deliberate mark rather than a caption, but it no longer competes with the
-   nav links above it. Because it no longer reaches the right edge, the box is
-   kept at 100vw purely to hold the shared left edge; overflow: hidden on the
-   wordmark is now belt-and-braces rather than load-bearing.
-
-   line-height is 0.84, tightened from 0.82 because two lines stack their
-   leading twice; at the looser value the pair opens a visible gap and stops
-   reading as one block. */
+   The element is display: none rather than visibility: hidden so it leaves
+   the layout entirely; BigBack still renders the wrapper div, and leaving it
+   in flow would reserve its 28px/8px margins and the two lines' height as
+   empty space under the lens. */
 .pui-bigback__wordmark {
-  display: block;
-  margin: 28px 0 8px;
-  width: 100vw;
-  margin-left: 50%;
-  transform: translateX(-50%);
-  overflow: hidden;
-}
-
-.pui-bigback__wordmark::before,
-.pui-bigback__wordmark::after {
-  display: block;
-  width: 100%;
-  font-family: var(--mono-display);
-  font-size: 13.5vw;
-  font-weight: 700;
-  line-height: 0.84;
-  letter-spacing: -0.055em;
-  text-transform: uppercase;
-  text-align: left;
-  white-space: nowrap;
-  opacity: 0.15;
-}
-
-.pui-bigback__wordmark::before {
-  content: var(--wm-1, "");
-}
-
-.pui-bigback__wordmark::after {
-  content: var(--wm-2, "");
+  display: none;
 }
 
 /* Nav columns and the baseline row both centered. */
