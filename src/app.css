@@ -815,7 +815,16 @@ body::before {
 
 /* ---------- library component overrides ---------- */
 
-/* StickyBanner: flat strip, hard border. */
+/* StickyBanner: flat strip, hard border, always a single line.
+
+   The library lays this out as a centered flex row, so the leading and
+   trailing text wrap onto separate lines once the viewport narrows. nowrap
+   plus hidden overflow holds it to one line.
+
+   The trailing text is passed as a bare string and lands as a text node, not
+   an element, so :last-child is not usable to drop it on small screens. The
+   font is scaled down instead, which keeps both halves readable. */
+.pui-sticky-banner,
 .pui-stickybanner,
 [class*="pui-sticky"] {
   border-radius: 0 !important;
@@ -826,6 +835,18 @@ body::before {
   font-size: 0.8rem;
   text-transform: uppercase;
   letter-spacing: 0.06em;
+  flex-wrap: nowrap;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+@media (max-width: 700px) {
+  .pui-sticky-banner,
+  .pui-stickybanner,
+  [class*="pui-sticky"] {
+    font-size: 0.66rem;
+    letter-spacing: 0.02em;
+  }
 }
 
 /* EyebrowPill: square tag. */
