@@ -138,6 +138,18 @@ const MARQUEE: MarqueeItem[] = tools.map((t) => {
       };
 });
 
+/* How far the lens is allowed to reach past the footer's own edges, per side.
+
+   The disc is deliberately wider than the footer band, so it overlaps the
+   border and the paper above and below rather than being cut at them. 56px is
+   the most the surrounding layout can absorb: the workbench leaves 72px of
+   bottom padding above the footer, and anything past that would start covering
+   the IDE panel. Kept in one place because the same number is used twice —
+   once here for the diameter, and once in app.css as --lens-bleed for the
+   footer's horizontal padding, which is what stops the disc being clipped
+   sideways at the page's left and right edges. */
+const LENS_BLEED = 56;
+
 /* The footer's magnifier.
 
    Goldeneye is a lens: the base layer paints `text_default`, and a circular
@@ -178,9 +190,23 @@ const MARQUEE: MarqueeItem[] = tools.map((t) => {
    moves in direct response to pointer movement, so it is not autonomous motion
    and stays under prefers-reduced-motion. */
 function FooterLens() {
-  // The diameter is a JS prop, so it cannot be a CSS clamp. Measured from the
-  // element itself with a ResizeObserver rather than from window.innerWidth:
-  // the constraint is the footer's box, and it is the footer that can change.
+  /* The diameter is a JS prop, so it cannot be a CSS clamp. Measured from the
+     element itself with a ResizeObserver rather than from window.innerWidth:
+     the constraint is the footer's box, and it is the footer that can change.
+
+     It is deliberately LARGER than that box. A circle centred in a band cannot
+     exceed the band's height without being cut at its edges, which is why
+     this was previously h - 24 and why the lens looked small in a footer that
+     had just been halved. Growing it means letting the disc overlap the
+     footer's own top and bottom edges, over the border and onto the paper
+     either side — the workbench leaves 72px of padding above and the page has
+     room below, and the disc's overflow is visible, so the circle passes over
+     both rather than being clipped at them.
+
+     That is the intended look: a lens resting on the page rather than a
+     window cut to fit inside it. LENS_BLEED is how far past the footer the
+     disc reaches on each side, and the 460px ceiling stops it swallowing the
+     workbench on a tall display. */
   const host = useRef<HTMLDivElement>(null);
   const [diameter, setDiameter] = useState(280);
 
@@ -189,12 +215,7 @@ function FooterLens() {
     if (!el) return;
     const ro = new ResizeObserver(([entry]) => {
       const h = entry.contentRect.height;
-      // Leave a few px of slack so the disc's edge never touches the border.
-      // The floor is deliberately below the footer's own minimum height
-      // (clamp's 130px): the disc has to be able to shrink with the box, and a
-      // 160px floor would have been wider than a 130px footer, which is
-      // exactly the clipping this measurement exists to prevent.
-      setDiameter(Math.max(90, Math.min(460, h - 24)));
+      setDiameter(Math.max(120, Math.min(460, h + LENS_BLEED * 2)));
     });
     ro.observe(el);
     return () => ro.disconnect();

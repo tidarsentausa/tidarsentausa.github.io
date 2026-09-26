@@ -38,6 +38,13 @@ html {
 
 body {
   margin: 0;
+  /* Room for the lower half of the lens to hang past the footer's bottom edge.
+     The disc is deliberately wider than the footer band, so without this the
+     bottom of the circle is cut off by the end of the document. It lives on
+     body rather than .page because the footer is a SIBLING of main.page, not
+     a descendant of it — padding on .page would sit above the footer and
+     achieve nothing. Must match --lens-bleed in App.tsx. */
+  padding-bottom: 56px;
   background: var(--paper);
   color: var(--ink);
   font-family: var(--mono-body);
@@ -1162,6 +1169,21 @@ body::before {
      so the type ended up a third of the height it was allowed. Referencing
      the same value keeps the two locked together at every viewport. */
   --footer-h: clamp(130px, 21vh, 200px);
+  /* Must match LENS_BLEED in App.tsx, which uses it for the diameter. */
+  --lens-bleed: 56px;
+  /* box-sizing moves the padding INSIDE --footer-h instead of adding to it, so
+     the disc has somewhere to bleed without the band getting any taller.
+     Without this the footer is content-box and any padding here would push
+     the page half again as long.
+
+     The padding is what makes a disc larger than the box possible at all. A
+     circle centred in a 130px band cannot exceed 130px, so the only way to
+     grow it is to let it overlap the footer's own edges — upward into the
+     workbench's bottom padding, downward into the page's. The workbench
+     leaves 72px there, and the disc's overflow is visible, so the circle
+     passes over the border and the paper rather than being cut at it. */
+  box-sizing: border-box;
+  padding: 0 calc(var(--lens-bleed) / 2);
   height: var(--footer-h);
 }
 
@@ -1187,6 +1209,21 @@ body::before {
   width: 100%;
   height: 100%;
   min-height: 0;
+  /* The library's own .pui-goldeneye rule sets `overflow: hidden`, and that is
+     what stops a disc larger than this box from being a disc at all. The scope
+     is `position: absolute; inset: 0` — the size of THIS element — and the
+     reveal is a clip-path circle painted inside it. Overflow hidden does not
+     scale a clipped circle, it CROPS it: with a 119.5px radius in a 127px-tall
+     box the top and bottom of the circle were cut off, and the lens painted
+     as a 236x126 lozenge at a 1.87 aspect ratio instead of a circle.
+
+     So the crop has to go, and this element has to be tall enough to hold the
+     whole circle. It is grown by the bleed on each side and centred on the
+     footer, which keeps its centre where the pointer expects it while letting
+     the disc pass over the footer's edges instead of being cut at them. */
+  overflow: visible;
+  height: calc(100% + var(--lens-bleed) * 2);
+  margin-top: calc(var(--lens-bleed) * -1);
 }
 
 /* Goldeneye's own theme.
