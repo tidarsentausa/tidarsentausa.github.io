@@ -553,6 +553,19 @@ body::before {
   gap: 16px;
 }
 
+/* Two columns, not auto-fit. The wide card spans the whole row, so the two
+   side projects share the row above it; with auto-fit the grid resolved to
+   three columns and the pair left a third column empty on the right. */
+.projects {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+@media (max-width: 720px) {
+  .projects {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
 /* The AI-ops case study carries four supporting bullets, so it spans the full
    row and sits below the two shorter side-project cards. grid-column: 1 / -1
    keeps it full width at every breakpoint. */
@@ -846,9 +859,21 @@ body::before {
 }
 
 /* Descendants stay square but carry no shadow of their own. */
-[class*="pui-ide"] {
+[class*="pui-ide"]:not(.pui-ide) {
   border-radius: 0 !important;
   box-shadow: none;
+}
+
+/* Fixed height, and the overflow is hidden rather than auto. A fixed height
+   with overflow-y: auto grew a scrollbar once the snippet passed the box.
+
+   740px is the measured height of the full 31-line snippet (722px) plus a
+   little headroom, so the window is constant from empty to full, nothing
+   scrolls, and no line is cut off. The page stops changing height as it
+   types. Recompute this if IDE_TOKENS grows or the font size changes. */
+.pui-ide__body {
+  height: 740px;
+  overflow: hidden;
 }
 
 /* BigBack's wordmark is an SVG using textLength + spacingAndGlyphs, which
