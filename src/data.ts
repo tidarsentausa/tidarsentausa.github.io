@@ -54,15 +54,6 @@ export const tools = [
   { name: "Similarweb", slug: "similarweb", src: null },
 ] as const;
 
-export const brands = [
-  "Samsung",
-  "LegalBison",
-  "Bukalapak",
-  "AMAAN",
-  "Chilibeli",
-  "Cheil Worldwide",
-] as const;
-
 export const roles: Role[] = [
   {
     company: "LegalBison.com",
@@ -167,6 +158,51 @@ export const roles: Role[] = [
       "Authored 1,601 search engine optimized articles across informational to transactional buying intents",
       "Applied best practices in writing and editing to enhance blog's role as daily activity resource",
       "Boosted user retention through up-to-date, trend-optimized content covering tech, hobbies, and travel",
+    ],
+  },
+  /* The five pre-BukaReview roles, grouped into one row.
+
+     Splitting them out individually was the alternative and it was the wrong
+     call. Five copywriter roles in a row, each with its own accordion and its
+     own bullet list, is roughly 700px of vertical space describing work that
+     is all the same job at a different company - which is exactly what a CV
+     should not do. A recruiter reading top-down wants to know the shape of the
+     career, and the shape here is "six years of writing and SEO for Indonesian
+     consumer and SME brands, then a step up to a lifestyle blog at scale". The
+     individual employers are detail that belongs one click away, not five
+     clicks away.
+
+     So the companies appear as the bullets - one per role, name, dates and
+     what was produced - and the blurb carries the through-line. Same content,
+     one disclosure instead of five.
+
+     The dates are kept exactly as LinkedIn records them, which means two
+     things worth flagging to the user rather than silently tidying:
+
+     Ensogo (Oct 2013 - Mar 2015) and PT. Vista Indonesia (Oct 2014 - Dec 2014)
+     overlap by three months, and the PDF lists Vista *after* Ensogo despite
+     starting later. Ensogo and Qraved also overlap in Sep 2013. These are
+     almost certainly contract or overlapping engagements rather than a
+     mistake, and the bullets are written so the overlap is not hidden - each
+     line carries its own dates.
+
+     MatahariMall runs to Oct 2017, and LinkedIn dates Bukalapak from Nov 2017,
+     so the two do not actually collide. The period on the row above says
+     "Jan 2017 - Dec 2019" and does overlap; that predates this change and was
+     left alone rather than edited unasked. */
+  {
+    company: "Early Career - Copywriting & Content",
+    title: "Copywriter / Content Writer",
+    period: "Oct 2011 - Oct 2017",
+    location: "Jakarta, Indonesia",
+    blurb:
+      "Six years writing for Indonesian consumer, retail, SME and social platforms. Daily production copywriting, SEO content, and the HTML/CSS editing that went with it, before moving into lifestyle editorial at scale.",
+    highlights: [
+      "88DB Indonesia (Oct 2011 - Sep 2013): website content from slogans and product copy through to full company profiles, for clients mainly in the SME sector. Applied copywriting, SEO content, HTML and CSS editing directly.",
+      "Ensogo (Oct 2013 - Mar 2015): daily-deal platform copy covering retail products and travel deals, including banner copy, body copy and slogans. Reported to the editor and production lead daily and weekly.",
+      "Qraved (Sep 2013 - Jan 2014): weekly food and restaurant review content, working to the editorial brief on what to cover.",
+      "PT. Vista Indonesia (Oct 2014 - Dec 2014): BTL copy from private to government clients, from slogans and taglines to print and annual reports, including the ideation and pitching stage.",
+      "MatahariMall.com (Mar 2015 - Oct 2017): daily retail content requiring basic SKU management in the CMS, working alongside photographers and the digital imaging team.",
     ],
   },
 ];

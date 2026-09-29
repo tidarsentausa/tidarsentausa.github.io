@@ -1,9 +1,8 @@
 # Tidar Sentausa
 
 **SEO Manager · Digital Project Manager · SEO Strategist**
-Kuala Lumpur, Malaysia · [tidar.sentausa@gmail.com](mailto:tidar.sentausa@gmail.com) · [+60 16 226 5070](tel:+60162265070)
-
-[LinkedIn](https://linkedin.com/in/tidar-sentausa) · [GitHub](https://github.com/tidarsentausa)
+Kuala Lumpur, Malaysia · [LinkedIn](https://linkedin.com/in/tidar-sentausa) ·
+[Portfolio](https://tidarsentausa.github.io)
 
 ---
 
@@ -52,6 +51,7 @@ Similarweb
 | **Dec 2020 – Dec 2021** | AMAAN Indonesia | Web & App Content Specialist |
 | **Dec 2019 – Dec 2020** | Chilibeli | SEO Content Marketing Specialist |
 | **Jan 2017 – Dec 2019** | BukaReview by Bukalapak | SEO Content Writer |
+| **Oct 2011 – Oct 2017** | Early career (5 roles) | Copywriter / Content Writer |
 
 ## Languages
 
@@ -62,14 +62,38 @@ Indonesian (native), English (fluent).
 ## About this site
 
 This is my résumé, built to be read rather than skimmed. Static React and Vite,
-styled in a neobrutalist system — sharp corners, hard borders, offset shadows,
-monospace throughout. The decorative terminal below the content retypes an
-analytics script on a loop; it illustrates the tooling work above, it isn't a
-portfolio piece.
+styled in a neobrutalist system — sharp corners, hard borders, offset shadows.
 
 All copy and content live in [`src/data.ts`](src/data.ts) — that's the file to
-edit for anything you'd read on the page. Layout is in
-[`App.tsx`](src/App.tsx), the design system in [`app.css`](src/app.css).
+edit for anything you'd read on the page. The page itself is assembled in
+[`App.tsx`](src/App.tsx) from one component per section, in `src/sections/`.
+
+### The UI layer
+
+Styling comes from [**BoldKit**](https://github.com/ANIBIT14/boldkit), a
+neubrutalism component library built on shadcn/ui. Its components are vendored
+as source, not installed from npm — each file under `src/ui/` came from
+`https://boldkit.dev/r/<name>.json` and is updated by re-fetching that URL.
+That is deliberate: shadcn components are meant to be owned and edited, not
+pinned in `node_modules`.
+
+- `src/styles/globals.css` — the BoldKit theme (HSL tokens, motion system).
+  Re-fetch with `curl https://boldkit.dev/r/styles.json` if you want to upgrade.
+- `src/styles/motion.css` — the animation keyframes the theme references.
+- `src/lib/utils.ts` — the `cn()` class helper the components import.
+- `src/app.css` — page structure only. It deliberately overrides no BoldKit
+  token; section rhythm, the marquee rail, and the display type live there.
+
+To add a BoldKit component, drop the registry JSON into the repo root and copy
+its files into `src/ui/`:
+
+```bash
+curl -sSL https://boldkit.dev/r/<component>.json -o tmp.json
+# then move the `files[].content` entries from tmp.json into src/ui/
+```
+
+The `@/` alias that those components import through is set in both
+`vite.config.ts` and `tsconfig.json`.
 
 ```bash
 npm install
@@ -78,11 +102,22 @@ npm run build     # production build into dist/
 npm run preview   # serve the build locally
 ```
 
-Pushes to `main` deploy to GitHub Pages. Built on
-[performative-ui](https://github.com/vorpus/performativeUI) for the logo
-marquee and a few other components, consumed as an ordinary npm dependency.
+Pushes to `main` deploy to GitHub Pages.
 
 Most tool logos load as SVGs from the simple-icons CDN. Ahrefs, Screaming Frog,
-and Microsoft Clarity are self-hosted in `public/` because simple-icons doesn't
-carry them; if the CDN changes, the rest will 404 silently. `Moz` resolves to
+and Microsoft Clarity are not in simple-icons, so they are self-hosted in
+`public/`; if the CDN changes, the rest will 404 silently. `Moz` resolves to
 the Mozilla mark, as simple-icons has no Moz entry.
+
+The three self-hosted marks are black-on-transparent, converted from the
+official colour artwork by [`tools/monochrome-icons.py`](tools/monochrome-icons.py)
+so they match the CDN glyphs instead of reading as two coloured errors. To
+rebuild them from a fresh download:
+
+```bash
+git checkout -- public/clarity.png public/sf-favicon.png   # undo a previous run
+python tools/monochrome-icons.py
+```
+
+The script is not idempotent — it reads luminance, and an already-black image
+has none — so always start from the committed originals.

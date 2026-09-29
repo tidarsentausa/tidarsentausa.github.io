@@ -1,1734 +1,910 @@
-/* Neobrutalist resume. Hard edges, offset shadows, monospace, no gradients.
+/* Site-level layout on top of the BoldKit theme (src/styles/globals.css).
 
-   Monospace throughout, but deliberately not one voice: a neo-grotesque mono
-   for the body, a condensed mono for display, and a slab-ish mono for the
-   numeric stats, so the page has typographic hierarchy without leaving the
-   monospace register. */
+   globals.css owns the neubrutalism system: the HSL tokens, the 3px borders,
+   the hard 4px shadows and the motion curve. Nothing here overrides a token —
+   it only adds page structure (the shell, section rhythm, and the marquee
+   rail) that a component library has no reason to know about. */
 
-@import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Instrument+Serif:ital@0;1&family=Space+Mono:wght@400;700&family=JetBrains+Mono:wght@400;700;800&display=swap");
-
-/* ---------- theme tokens ----------
-
-   Two palettes, one set of names. :root IS the light palette and carries every
-   token, so the page renders correctly with no data-theme attribute at all (JS
-   disabled, or the pre-paint script in index.html not run) and light is the
-   fallback rather than a special case.
-
-   [data-theme="dark"] then overrides ONLY the values that change. Anything not
-   listed there is theme-invariant by construction — the fonts, the shadows
-   (which reference --line, so they re-derive), the spacing and the max width.
-
-   The two are inversions, not a second design: dark is light with paper and ink
-   swapped. That is what keeps the neobrutalist contract intact, because the
-   hard border and the offset shadow are the SAME colour in both themes (--line
-   tracks whichever one is ink), so a card in dark mode is still a light rule
-   with a light shadow thrown down-right of it. */
+/* Space Grotesk for display, Inter for body. Both are referenced from
+   index.html's preconnect + stylesheet link, so the first paint is already
+   the right face rather than swapping after the bundle lands. */
 :root {
-  --ink: #14141a;
-  --paper: #f4f1ea;
-  --surface: #ffffff;
-  --line: #14141a;
-  --accent: #ff4f18;
-  --accent-2: #2b5cff;
-  --muted: #5c5c66;
-
-  /* Text that sits ON an accent fill. The two solid-accent surfaces are
-     .btn--solid and .skillgroup__level, and both are orange in either theme.
-
-     Light is white, which is the existing design. Dark is the paper colour: the
-     orange is a LIGHT colour, so carrying white text on it in dark mode is what
-     fails — #fff on #ff7a45 measures 2.59:1. Ink on the same orange measures
-     6.8:1, and it is also the only version that keeps the goldeneye's inverted
-     scope legible, since that scope paints this colour as its background. */
-  --on-accent: #ffffff;
-
-  /* The graph-paper grid. It was a literal rgba(20,20,26,.045) matching the
-     light ink; inverting the page means inverting the grid too, and a fixed
-     dark grid on a dark page is invisible. */
-  --grid: rgba(20, 20, 26, 0.045);
-
-  /* The logo strip's monochrome filter. simple-icons ships black paths, so this
-     is "keep them black and crisp"; see the dark override for why it changes. */
-  --logo-filter: grayscale(1) contrast(1.1);
-
-  /* Tells the UA to render form controls, scrollbars and the caret against the
-     page rather than against a fixed assumption. Without it a dark page still
-     gets a light scrollbar gutter on Windows and Chrome. */
-  color-scheme: light;
-
-  /* Three monospace voices. */
-  --mono-body: "IBM Plex Mono", "Cascadia Mono", ui-monospace, monospace;
-  --mono-display: "Space Mono", "IBM Plex Mono", ui-monospace, monospace;
-  --mono-stats: "JetBrains Mono", "IBM Plex Mono", ui-monospace, monospace;
-
-  --shadow: 6px 6px 0 var(--line);
-  --shadow-sm: 4px 4px 0 var(--line);
-  --max: 1120px;
-}
-
-[data-theme="dark"] {
-  /* The inversion. --ink and --line were the same value in light and still are
-     (one is text, the other is the border/shadow colour, and they are meant to
-     match), so the border and its offset shadow stay a single voice. */
-  --ink: #f2efe8;
-  --paper: #14141a;
-  /* Lifted off the paper rather than pure white: a pure #fff card on #14141a
-     has no surface of its own and reads as a hole punched in the page. */
-  --surface: #1e1e26;
-  --line: #f2efe8;
-
-  /* Both accents are lightened. #ff4f18 on #14141a measures 4.3:1 and #2b5cff
-     on the same measures 2.6:1 — the blue fails outright for the role
-     locations and project links, which are body-size text, and the orange is
-     marginal against the same background. These clear 4.5:1 on paper. */
-  --accent: #ff7a45;
-  --accent-2: #7d9bff;
-  --muted: #a3a3b0;
-
-  /* Dark text on the orange, for the reason on the light-mode --on-accent. */
-  --on-accent: #14141a;
-
-  --grid: rgba(242, 239, 232, 0.05);
-  color-scheme: dark;
-
-  /* Marks are black, so on a near-black strip they would disappear entirely.
-     invert() is the same trick the library uses for its own dark default
-     (--pui-logo-filter ships `invert(92%) grayscale(100%)`); grayscale comes
-     first so a coloured raster still lands on neutral, and the rasters are
-     excluded in the .logos rules below because inverting a green frog and a
-     blue Clarity mark produces two wrong brand colours rather than one right
-     one. */
-  --logo-filter: invert(1) grayscale(1) contrast(1.1);
+  --font-display: 'Space Grotesk', 'Inter', system-ui, sans-serif;
 }
 
 html {
   scroll-behavior: smooth;
-}
-
-*,
-*::before,
-*::after {
-  border-radius: 0 !important;
+  /* The header is a sticky rail with a hard border; anchored sections must
+     clear it or their titles end up underneath. */
+  scroll-padding-top: 6rem;
 }
 
 body {
-  margin: 0;
-  /* Room for the lower half of the lens to hang past the footer's bottom edge.
-     The disc is deliberately wider than the footer band, so without this the
-     bottom of the circle is cut off by the end of the document. It lives on
-     body rather than .page because the footer is a SIBLING of main.page, not
-     a descendant of it — padding on .page would sit above the footer and
-     achieve nothing. Must match --lens-bleed in App.tsx. */
-  padding-bottom: 56px;
-  background: var(--paper);
-  color: var(--ink);
-  font-family: var(--mono-body);
-  font-size: 15px;
-  font-weight: 400;
-  line-height: 1.65;
-  font-variant-ligatures: none;
-  -webkit-font-smoothing: antialiased;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+    sans-serif;
 }
 
-/* Global mono enforcement, including anything a component injects. */
-body * {
-  font-family: var(--mono-body);
-  border-radius: 0 !important;
-}
+/* --- Page shell --------------------------------------------------------- */
 
-/* Round loaders are the one exception: a spinning square reads as a rendering
-   glitch rather than progress, so the spinners keep their circle. */
-.pui-spinner,
-.pui-spinner--sm,
-.pui-dot,
-[class*="pui-dot"] {
-  border-radius: 50% !important;
-}
-
-/* A faint grid, so the page reads as graph paper. */
-body::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-  background-image:
-    linear-gradient(var(--grid) 1px, transparent 1px),
-    linear-gradient(90deg, var(--grid) 1px, transparent 1px);
-  background-size: 28px 28px;
-}
-
-.page {
-  position: relative;
-  z-index: 1;
-  max-width: var(--max);
-  margin: 0 auto;
-  padding: 0 24px;
-}
-
-/* ---------- hero ---------- */
-
-.hero {
-  padding: 64px 0 36px;
-  text-align: left;
-}
-
-.hero__name {
-  margin: 20px 0 6px;
-  font-family: var(--mono-display);
-  font-size: clamp(2.6rem, 8vw, 4.75rem);
-  line-height: 0.95;
-  letter-spacing: -0.045em;
-  font-weight: 700;
-  text-transform: uppercase;
-}
-
-.hero__roles {
-  margin: 0;
-  font-family: var(--mono-display);
-  font-size: 1.05rem;
-  font-weight: 400;
-  text-transform: uppercase;
-  letter-spacing: 0.02em;
-}
-
-.hero__meta {
-  margin: 10px 0 0;
-  color: var(--muted);
-  font-size: 0.9rem;
-}
-
-/* ---------- portrait ---------- */
-
-/* Portrait and identity share the top row on wide screens, so the photo reads
-   as part of the name block rather than as a floating avatar bolted on.
-
-   The frame is sized in viewport terms and capped, so it stays a supporting
-   element: wide enough to be a face, small enough that the name keeps the
-   dominant voice. It is a fixed square rather than a percentage of the column,
-   because the source is a 1:1 crop and any other ratio would letterbox or
-   clip a face. flex-shrink is 0 so a narrow viewport can never squash it into
-   an ellipse — the row wraps first (see the 760px rule). */
-.hero__top {
-  display: flex;
-  align-items: flex-start;
-  gap: clamp(20px, 3vw, 36px);
-}
-
-.hero__id {
-  /* min-width: 0 so the name and meta can wrap inside the flex row instead of
-     forcing the whole row wider than the page. */
-  min-width: 0;
-  flex: 1 1 auto;
-}
-
-.portrait {
-  flex: 0 0 auto;
-  width: clamp(120px, 20vw, 200px);
-  margin: 0;
-  border: 2px solid var(--line);
-  background: var(--surface);
-  box-shadow: var(--shadow);
-  transition:
-    transform 90ms ease,
-    box-shadow 90ms ease;
-}
-
-.portrait:hover {
-  transform: translate(-2px, -2px);
-  box-shadow: 8px 8px 0 var(--line);
-}
-
-/* Cover, not contain: the box is square and the photo is square, so this only
-   matters if a replacement image is a different shape. The focal point sits
-   left of centre in the source (the subject is off-axis with more negative
-   space on the right), so the object position is biased the same way to keep
-   the face centred if the frame ever does crop. */
-.portrait__img {
-  display: block;
+.shell {
   width: 100%;
-  height: auto;
-  aspect-ratio: 1 / 1;
-  object-fit: cover;
-  object-position: 38% 28%;
-  /* The source is monochrome already; a touch of contrast keeps the subject
-     from washing out against the paper background. */
-  filter: contrast(1.05);
+  max-width: 76rem;
+  margin-inline: auto;
+  padding-inline: 1.25rem;
 }
 
-/* Below this the name needs the full measure: at 8vw the display face needs
-   roughly 340px to hold "TIDAR SENTAUSA" on one line, and it stops doing that
-   well before the photo would run out of room beside it. So the row becomes a
-   column.
-
-   It stays LEFT-aligned, which is the point of this rule. It used to centre
-   here — align-items: center and text-align: center — so the hero was flush
-   left on desktop and centred on a phone, and the name's left edge moved with
-   the viewport. Every other section on the page is left-aligned at every width,
-   so the hero was the single exception and read as a different site on mobile.
-   The portrait now sits hard against the same left margin as the name below it,
-   and the two share one optical edge at every size.
-
-   align-items is what aligns the portrait itself, and text-align is what
-   aligns the text inside .hero__id; both are needed, because the column
-   stretches the text block but not the fixed-width photo. */
-@media (max-width: 760px) {
-  .hero__top {
-    flex-direction: column;
-    align-items: flex-start;
-    text-align: left;
-    gap: 20px;
-  }
-
-  .portrait {
-    width: clamp(112px, 34vw, 168px);
-  }
-
-  .hero__id {
-    width: 100%;
+@media (min-width: 768px) {
+  .shell {
+    padding-inline: 2rem;
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .portrait {
-    transition: none;
-  }
-
-  .portrait:hover {
-    transform: none;
-  }
-}
-
-.hero__cta {
-  display: flex;
-  gap: 12px;
-  flex-wrap: wrap;
-  margin: 28px 0 48px;
-}
-
-.btn {
-  display: inline-block;
-  padding: 10px 20px;
-  border: 2px solid var(--line);
-  background: var(--surface);
-  color: var(--ink);
-  font: inherit;
-  font-size: 0.85rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  text-decoration: none;
-  box-shadow: var(--shadow-sm);
-  transition:
-    transform 90ms ease,
-    box-shadow 90ms ease;
-}
-
-.btn:hover {
-  transform: translate(-2px, -2px);
-  box-shadow: 6px 6px 0 var(--line);
-}
-
-.btn:active {
-  transform: translate(2px, 2px);
-  box-shadow: 2px 2px 0 var(--line);
-}
-
-.btn--solid {
-  background: var(--accent);
-  color: var(--on-accent);
-}
-
-/* The theme toggle, in the same language as every other .btn so it reads as
-   part of the row rather than as a browser widget dropped into it.
-
-   It is the only .btn that leads with a glyph, so the glyph is pinned to a
-   fixed box: a ☀ and a ☾ have different advance widths, and letting them size
-   the button would make it visibly jump a few pixels on every toggle — the one
-   piece of motion on a page that is otherwise still while you click.
-
-   The label is the theme you are switching TO, matching the glyph. Both are
-   uppercased by .btn already, so "LIGHT" is what the row shows. */
-.btn--theme {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.btn__glyph {
-  /* One em square, centred, so both glyphs occupy the same footprint. */
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 1em;
-  height: 1em;
-  font-size: 1.05em;
-  line-height: 1;
-}
-
-/* Both buttons become the same square at this width.
-
-   Measured collapsed, they were 58.3x38.3 (theme) against 36.3x44.6 (top), so
-   one was a wide lozenge and the other a narrow upright chip. Three causes, all
-   fixed here rather than nudged:
-
-   - Different padding: .btn carries 10px/20px, .to-top 10px/12px.
-   - Different type size: .btn is 0.85rem, .to-top 0.78rem.
-   - Different glyph widths: the theme glyph is pinned to a 1em square (14.3px),
-     but the arrow is a raw character whose advance is only 8.3px. Even with
-     identical padding the two would have sized to different content.
-
-   So each is given an explicit square box and its padding is dropped entirely,
-   with the glyph centred inside. 44px is the common minimum touch target, and
-   the offset shadow still reads because it is drawn outside the box.
-
-   The labels are hidden at the same breakpoint as before, so the accessible
-   name is unchanged — the theme button keeps its aria-label and the arrow stays
-   aria-hidden, as they were. */
-@media (max-width: 560px) {
-  .rail {
-    right: 16px;
-    bottom: 16px;
-    gap: 10px;
-  }
-
-  .btn--theme,
-  .to-top {
-    /* One square for both, stated once. */
-    width: 44px;
-    height: 44px;
-    padding: 0;
-    justify-content: center;
-    /* The type no longer drives the box, so the difference stops mattering —
-       but it is pinned anyway so the two glyphs are optically the same size. */
-    font-size: 0.85rem;
-  }
-
-  .btn__themelabel,
-  .to-top__label {
-    display: none;
-  }
-}
-
-/* ---------- floating control rail ----------
-
-   The theme switch and back-to-top, stacked bottom-right.
-
-   One rail rather than two independently-positioned buttons. Both want the
-   bottom-right corner, so placing them separately would mean one of them
-   hardcoding the other's height to sit above it — and that number goes stale
-   the moment either button drops its label at the 560px breakpoint. A column
-   anchored to the bottom grows upward instead, so the bottom offset is correct
-   at any height and the two can never overlap.
-
-   The gap is the same 12px the hero CTA row uses, so the pair reads as one
-   system. z-index 40 is carried over from .to-top and is the same reason given
-   there: the footer lens disc reaches up behind this corner and would
-   otherwise intercept the clicks.
-
-   pointer-events is off on the rail and back on for the buttons, because the
-   rail's box is a flex container that spans the full width of its widest
-   child — as a bare fixed element it would be a wide invisible strip across
-   the bottom of the page, swallowing clicks on whatever sits under it. Only
-   the buttons themselves should be clickable. */
-.rail {
-  position: fixed;
-  right: 24px;
-  bottom: 24px;
-  z-index: 40;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 12px;
-  pointer-events: none;
-}
-
-.rail > * {
-  pointer-events: auto;
-}
-
-@media (max-width: 560px) {
-  .rail {
-    right: 16px;
-    bottom: 16px;
-  }
-}
-
-/* ---------- back to top ---------- */
-
-/* Fixed square button in the same language as .btn: hard border, offset
-   shadow, no rounding. Hidden with opacity rather than display so it can
-   fade, and kept out of the tab order and the a11y tree while hidden, so it
-   cannot be focused or announced before it is visible.
-
-   No longer position:fixed — the rail owns the positioning now, and this is a
-   flex item in it. Everything else about the button is unchanged. */
-.to-top {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 14px;
-  border: 2px solid var(--line);
-  background: var(--surface);
-  color: var(--ink);
-  font: inherit;
-  font-size: 0.78rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  box-shadow: var(--shadow-sm);
-  cursor: pointer;
-  opacity: 0;
-  visibility: hidden;
-  transform: translateY(8px);
-  transition:
-    opacity 160ms ease,
-    transform 160ms ease,
-    box-shadow 90ms ease;
-}
-
-.to-top--on {
-  opacity: 1;
-  visibility: visible;
-  transform: translateY(0);
-}
-
-.to-top:hover {
-  box-shadow: 6px 6px 0 var(--line);
-  transform: translate(-2px, -2px);
-}
-
-.to-top:active {
-  transform: translate(2px, 2px);
-  box-shadow: 2px 2px 0 var(--line);
-}
-
-.to-top:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 3px;
-}
-
-/* The arrow alone is enough once space is tight. The corner offset, the shared
-   square box and the hidden label are all handled together in the rail's 560px
-   block above, so there is nothing left to change here. */
-
-/* Respect a stated preference for reduced motion: the fade is the only
-   animation here, and smooth scrolling is handled globally in html above. */
-@media (prefers-reduced-motion: reduce) {
-  .to-top {
-    transition: none;
-  }
-}
-
-/* ---------- stats ---------- */
-
-/* One line per stat: value, suffix and label sit on a single baseline row.
-   The label must never clip, so the grid track is sized off its content and
-   the whole row is allowed to wrap onto a second line if it truly runs out. */
-/* Four cards, always one row. auto-fit was leaving 3 + 1 orphan, so pin the
-   track count and let the type shrink instead. */
-.hero__stats {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 2px;
-  border: 2px solid var(--line);
-  background: var(--line);
-  /* The same hard offset as .portrait and the role cards, so the hero reads
-     as one lifted system rather than the stats and logo band being the only
-     flat things on the page. Zero blur, 6px down-right: the shadow is a
-     duplicate of the box, not a glow. Both strips are 1120px inside a 1168px
-     page, leaving 73px to the right, so a 6px offset cannot reach the
-     viewport edge and cause horizontal overflow. */
-  box-shadow: var(--shadow);
-}
-
-@media (max-width: 900px) {
-  .hero__stats {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-@media (max-width: 520px) {
-  .hero__stats {
-    grid-template-columns: 1fr;
-  }
-}
-
-/* Height-matched to the logo band below (84px including the strip borders), so
-   the two read as one horizontal system.
-
-   height is fixed rather than min-height: with min-height the 16px vertical
-   padding still added on top and pushed the strip to 117px. Padding is
-   horizontal-only, and the row is centred by align-items. */
-.stat {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  gap: 8px;
-  height: 79px;
-  padding: 0 14px;
-  background: var(--surface);
-  white-space: nowrap;
-}
-
-.stat .pui-stat,
-.stat__suffix {
-  font-family: var(--mono-stats);
-  font-size: 1.75rem;
-  font-weight: 800;
-  line-height: 1;
-  letter-spacing: -0.05em;
-  flex-shrink: 0;
-}
-
-.stat__suffix {
-  color: var(--accent);
-}
-
-.stat__label {
-  margin: 0;
-  color: var(--muted);
-  font-family: var(--mono-body);
-  font-size: 0.7rem;
-  font-weight: 500;
-  line-height: 1.3;
-  text-transform: uppercase;
-  letter-spacing: 0.02em;
-  white-space: normal;
-  min-width: 0;
-}
-
-/* ---------- brands ---------- */
-
-/* The .logos block lives further down, with the marquee token overrides. */
-
-.marquee__word {
-  font-family: var(--mono-display);
-  font-size: 0.78rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-/* All marks monochrome for a consistent strip. simple-icons ships black
-   paths already, so in light this only affects the one raster (Screaming
-   Frog), which is desaturated here to match.
-
-   The filter comes from the token so dark mode can invert the black marks to
-   white. The raster exclusion is separate and load-bearing: filter order is
-   invert-then-grayscale, so a raster would have its brand colour inverted
-   BEFORE being flattened — the green frog lands magenta and the Clarity mark
-   orange. Both are excluded below and given a brightness lift instead, which
-   keeps them recognisable and legible on the dark strip. */
-.logos {
-  --pui-logo-filter: var(--logo-filter);
-  --pui-logo-filter-hover: var(--logo-filter);
-  --pui-logo-text: var(--ink);
-  margin: 40px 0 0;
-  padding: 10px 0;
-  /* Closed on all four sides, so the strip reads as one bordered band rather
-     than a pair of rules with open ends. The 2px matches .hero__stats directly
-     above it, which is already a full box, so the two stack without a seam. */
-  border: 2px solid var(--line);
-  background: var(--surface);
-  /* Matching the stats strip directly above, so the two bands read as a pair
-     of stacked slabs rather than one lifted and one flat. */
-  box-shadow: var(--shadow);
-}
-
-.logos img,
-.pui-marquee__item img {
-  height: 20px;
-  width: auto;
-  max-width: none;
-  object-fit: contain;
-  opacity: 1;
-  transition: none;
-  cursor: default;
-}
-
-/* Raster marks are square, so give them a square box to sit in. Without this
-   they align on their top edge and look larger than the vector marks. They get
-   a couple of extra pixels because a raster at the vector size reads as mush
-   (the Clarity mark loses its facets entirely). */
-.logos img[src$=".png"],
-.pui-marquee__item img[src$=".png"] {
-  width: 24px;
-  height: 24px;
-}
-
-/* Rasters opt out of the invert, for the reason given on .logos above. What
-   replaces it is theme-scoped: in light the mark is already dark enough
-   against white, and in dark a brand-coloured raster at full chroma is the one
-   element on the strip allowed to keep its colour, so it only needs a
-   brightness lift to sit on the near-black band. */
-[data-theme="dark"] .logos img[src$=".png"],
-[data-theme="dark"] .pui-marquee__item img[src$=".png"] {
-  filter: brightness(1.15) contrast(1.05);
-}
-
-.pui-marquee__item img:hover {
-  opacity: 1;
-}
-
-/* The library's fade is a mask-image on the marquee box, and a mask clips
-   everything that overflows it, including the hover label. Replaced with two
-   gradient overlays that fade the edges without clipping.
-
-   Overflow stays hidden on the track so logos remain contained by the strip,
-   which is what the mask was doing. The hover label is therefore painted
-   INSIDE the strip's own padding, below the mark, where nothing clips it. */
-.logos .pui-marquee {
-  overflow: hidden;
-  -webkit-mask-image: none;
-  mask-image: none;
-  position: relative;
-}
-
-/* Vertical rhythm of the band.
-
-   The hover label hangs below the mark, so the track needs clearance for it or
-   overflow:hidden clips the label. Using SYMMETRIC top/bottom padding is what
-   makes the marks sit optically centred: asymmetric padding would push them
-   toward the top border. Total band height stays modest: 20px mark + 2x18px. */
-/* The library loops with translateX(-50%) over a track it renders twice. For
-   that to be seamless, one copy of the items must be at least as wide as the
-   visible window. With a short list the two copies together are narrower than
-   the window, so the loop exposes empty space.
-
-   The fix is to repeat the item list enough times that half the track always
-   covers the full width. Repeat count is derived from the measured item width
-   in JS, and applied as extra clones on the track. */
-.logos .pui-marquee__track {
-  align-items: center;
-  padding-top: 18px;
-  padding-bottom: 18px;
-  will-change: transform;
-}
-
-.logos .pui-marquee::before,
-.logos .pui-marquee::after {
-  content: "";
-  position: absolute;
-  top: 0;
-  /* Cover the full band, padding included. The label is centered under its
-     own mark, so the fade never overlaps it in practice. */
-  bottom: 0;
-  width: 70px;
-  z-index: 10;
-  pointer-events: none;
-}
-
-.logos .pui-marquee::before {
-  left: 0;
-  background: linear-gradient(90deg, var(--surface), transparent);
-}
-
-.logos .pui-marquee::after {
-  right: 0;
-  background: linear-gradient(270deg, var(--surface), transparent);
-}
-
-/* Anchor for the hover label. It must not clip its own pseudo-element. */
-.pui-marquee__item {
-  position: relative;
-  overflow: visible;
-}
-
-.pui-marquee__item:hover::after {
-  content: attr(data-label);
-  position: absolute;
-  left: 50%;
-  /* Sit inside the band's lower padding rather than hanging below it, since
-     the track clips at its own bounds. */
-  top: calc(100% - 2px);
-  transform: translateX(-50%);
-  z-index: 20;
-  padding: 1px 6px;
-  border: 2px solid var(--line);
-  background: var(--ink);
-  color: var(--paper);
-  font-family: var(--mono-body);
-  font-size: 0.6rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  line-height: 1.5;
-  white-space: nowrap;
-  pointer-events: none;
-  box-shadow: 2px 2px 0 var(--accent);
-  opacity: 1;
-}
-
-/* ---------- sections ---------- */
-
+/* One rule for every section, so the vertical rhythm cannot drift as sections
+   are added or removed. */
 .section {
-  margin: 72px 0;
+  padding-block: 4rem;
 }
 
-.section__title {
+@media (min-width: 768px) {
+  .section {
+    padding-block: 6rem;
+  }
+}
+
+/* The section eyebrow: a small uppercase tag with a rule running to the edge,
+   which is how a neubrutalist page marks a new block without spending a
+   heading level on it. */
+.eyebrow {
   display: flex;
   align-items: center;
-  gap: 10px;
-  margin: 0 0 20px;
-  padding-bottom: 8px;
-  border-bottom: 3px solid var(--line);
-  font-family: var(--mono-display);
-  font-size: 1.05rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-}
-
-/* ---------- roles ---------- */
-
-.roles {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
-
-.role {
-  border: 2px solid var(--line);
-  background: var(--surface);
-  box-shadow: var(--shadow);
-  backdrop-filter: none;
-  background-color: var(--surface);
-}
-
-.role__head {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 16px;
-  width: 100%;
-  padding: 16px 18px;
-  border: 0;
-  background: none;
-  color: inherit;
-  font: inherit;
-  text-align: left;
-  cursor: pointer;
-}
-
-/* Hover feedback across the entire header row, not just the text. The
-   negative margin pulls the tint to the card edges so it reads as one block. */
-.role__head {
-  position: relative;
-  transition: background 120ms ease;
-}
-
-.role__head::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: var(--accent);
-  opacity: 0;
-  transition: opacity 120ms ease;
-  pointer-events: none;
-  z-index: 0;
-}
-
-.role__head:hover::after {
-  opacity: 0.1;
-}
-
-.role__head > * {
-  position: relative;
-  z-index: 1;
-}
-
-.role__company {
-  margin: 0;
-  font-family: var(--mono-display);
-  font-size: 1.05rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.01em;
-}
-
-.role__title {
-  margin: 3px 0 0;
-  color: var(--muted);
-  font-size: 0.88rem;
-}
-
-/* Market/desk location, where the source resume names one. */
-.role__location {
-  color: var(--accent-2);
-  font-weight: 700;
-}
-
-.role__period {
-  flex-shrink: 0;
-  padding: 2px 8px;
-  border: 2px solid var(--line);
-  background: var(--paper);
-  color: var(--ink);
-  font-family: var(--mono-stats);
-  font-size: 0.72rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  white-space: nowrap;
-}
-
-/* On a phone the company name, the title and the period cannot share a row:
-   the period is nowrap and would either squeeze the title or force a
-   horizontal scrollbar. Stack it under the title instead, and let it sit
-   left-aligned with the text rather than looking like a floating tag. */
-@media (max-width: 560px) {
-  .role__head {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 10px;
-    padding: 18px 16px 16px;
-  }
-
-  .role__period {
-    white-space: normal;
-  }
-}
-
-.role__body {
-  margin: 0 18px;
-  padding: 16px 0 20px;
-  border-top: 2px dashed var(--line);
-}
-
-.role__blurb {
-  margin: 0 0 14px;
-  color: var(--muted);
-  font-size: 0.9rem;
-  max-width: 76ch;
-}
-
-.role__list {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  max-width: 84ch;
-}
-
-/* Bullets as hard squares, matching the corners. */
-.role__list li {
-  position: relative;
-  padding-left: 20px;
-  font-size: 0.92rem;
-}
-
-.role__list li::before {
-  content: "";
-  position: absolute;
-  left: 0;
-  top: 0.55em;
-  width: 9px;
-  height: 9px;
-  background: var(--accent);
-  border: 1.5px solid var(--line);
-}
-
-.role__link,
-.project a {
-  display: inline-block;
-  margin-top: 16px;
-  color: var(--accent-2);
-  font-size: 0.85rem;
-  font-weight: 700;
-  text-decoration: none;
-  border-bottom: 2px solid currentColor;
-}
-
-/* Supporting bullets on a longer project case study. */
-.project__bullets {
-  margin: 12px 0 0;
-  padding-left: 18px;
-  color: var(--muted);
-  font-size: 0.85rem;
-  line-height: 1.6;
-}
-
-.project__bullets li {
-  margin-bottom: 5px;
-}
-
-/* ---------- projects and panels ---------- */
-
-.projects,
-.split {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 16px;
-}
-
-/* Two columns, not auto-fit. The wide card spans the whole row, so the two
-   side projects share the row above it; with auto-fit the grid resolved to
-   three columns and the pair left a third column empty on the right. */
-.projects {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-}
-
-@media (max-width: 720px) {
-  .projects {
-    grid-template-columns: minmax(0, 1fr);
-  }
-}
-
-/* The AI-ops case study carries four supporting bullets, so it spans the full
-   row and sits below the two shorter side-project cards. grid-column: 1 / -1
-   keeps it full width at every breakpoint. */
-.project--wide {
-  grid-column: 1 / -1;
-}
-
-.project--wide .project__bullets {
-  /* Two columns of bullets, so the wide card does not become a tall column. */
-  columns: 2;
-  column-gap: 32px;
-}
-
-@media (max-width: 720px) {
-  .project--wide .project__bullets {
-    columns: 1;
-  }
-}
-
-.project,
-.panel,
-.engagement,
-.case {
-  border: 2px solid var(--line);
-  background: var(--surface);
-  backdrop-filter: none;
-  background-color: var(--surface);
-  box-shadow: var(--shadow);
-}
-
-.project,
-.panel,
-.engagement {
-  padding: 18px;
-}
-
-.project h3,
-.panel h3,
-.engagement h3 {
-  margin: 0 0 8px;
-  font-size: 0.95rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-}
-
-.project p,
-.panel p,
-.engagement p {
-  margin: 0 0 6px;
-  color: var(--muted);
-  font-size: 0.9rem;
-}
-
-.panel__lead {
-  color: var(--ink) !important;
-  font-weight: 700;
-  font-size: 1rem !important;
-}
-
-.panel__meta {
-  font-size: 0.85rem !important;
-}
-
-/* The summary, promoted into the hero. Kept at a readable measure and a step
-   up from hero__meta, since it is the pitch rather than a detail line. */
-.hero__summary {
-  max-width: 72ch;
-  margin: 20px 0 0;
-  color: var(--ink);
-  font-size: 0.98rem;
-  line-height: 1.65;
-}
-
-/* ---------- engagement ---------- */
-
-.engagement__list {
-  margin: 0 0 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.engagement__list dt {
-  font-weight: 700;
-  font-size: 0.85rem;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-.engagement__list dd {
-  margin: 2px 0 0;
-  color: var(--muted);
-  font-size: 0.88rem;
-}
-
-.engagement__note {
-  margin: 0;
-  padding-top: 14px;
-  border-top: 2px dashed var(--line);
-  color: var(--ink) !important;
-  font-size: 0.85rem !important;
-  font-weight: 700;
-}
-
-/* ---------- skills ---------- */
-
-.skills {
-  display: grid;
-  grid-template-columns: 1.2fr 1fr;
-  gap: 18px;
-  align-items: start;
-}
-
-@media (max-width: 880px) {
-  .skills {
-    grid-template-columns: 1fr;
-  }
-}
-
-.skills__list {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
-
-.skillgroup {
-  border: 2px solid var(--line);
-  background: var(--surface);
-  backdrop-filter: none;
-  background-color: var(--surface);
-  box-shadow: var(--shadow-sm);
-  padding: 16px 18px;
-}
-
-.skillgroup header {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 12px;
-  padding-bottom: 8px;
-  border-bottom: 2px solid var(--line);
-}
-
-.skillgroup h3 {
-  margin: 0;
-  font-size: 0.9rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-.skillgroup__level {
-  padding: 1px 7px;
-  border: 2px solid var(--line);
-  background: var(--accent);
-  color: var(--on-accent);
-  font-size: 0.68rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  white-space: nowrap;
-}
-
-.skillgroup ul {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-
-.skillgroup li {
-  padding: 4px 9px;
-  border: 2px solid var(--line);
-  background: var(--paper);
-  color: var(--ink);
-  font-size: 0.78rem;
-}
-
-/* ---------- case study ---------- */
-
-.case {
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
-  gap: 0;
-  padding: 0;
-  align-items: stretch;
-}
-
-.case__col {
-  padding: 20px;
-}
-
-.case__head {
-  margin: 0 0 4px;
+  gap: 0.75rem;
+  font-family: var(--font-display);
   font-size: 0.75rem;
   font-weight: 700;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
-  letter-spacing: 0.14em;
-  color: var(--muted);
 }
 
-.case__lede {
-  margin: 0 0 12px;
-  font-size: 1.05rem;
-  font-weight: 700;
-}
-
-.case__list {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  font-size: 0.88rem;
-  color: var(--muted);
-}
-
-.case__arrow {
-  display: flex;
-  align-items: center;
-  padding: 0 4px;
-  border-left: 2px dashed var(--line);
-  border-right: 2px dashed var(--line);
-  background: var(--paper);
-  font-size: 1.6rem;
-  font-weight: 700;
-}
-
-@media (max-width: 720px) {
-  .case {
-    grid-template-columns: 1fr;
-  }
-
-  .case__arrow {
-    justify-content: center;
-    padding: 8px 0;
-    border: 0;
-    border-top: 2px dashed var(--line);
-    border-bottom: 2px dashed var(--line);
-  }
-}
-
-/* ---------- library component overrides ---------- */
-
-/* StickyBanner: flat strip, hard border, always a single line.
-
-   The library lays this out as a centered flex row, so the leading and
-   trailing text wrap onto separate lines as the viewport narrows. nowrap
-   plus hidden overflow holds it to one line, and both halves are now real
-   elements, so the trailing one can be dropped rather than clipped.
-
-   justify-content is pinned to center at every width rather than left to the
-   library default. The library already centers, but that is inherited, not
-   asserted: the narrow-screen media query below used to override it to
-   flex-start, which left the strip left-aligned on exactly the phones where
-   the single remaining word is most obviously off-centre. */
-.pui-sticky-banner,
-.pui-stickybanner,
-[class*="pui-sticky"] {
-  border-radius: 0 !important;
-  border-bottom: 2px solid var(--line);
-  background: var(--ink) !important;
-  color: var(--paper) !important;
-  font-family: inherit;
-  font-size: 0.8rem;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  flex-wrap: nowrap;
-  white-space: nowrap;
-  overflow: hidden;
-  justify-content: center;
-  text-align: center;
-  /* Positioning context for the absolutely-placed sparkle below. */
-  position: relative;
-}
-
-/* The library injects a decorative sparkle span (pui-sparkle--blink) as the
-   first child, before the message. It is removed rather than repositioned.
-
-   Two reasons it had to be dealt with at all: it occupies a flex slot, so
-   centring the row centred the sparkle and the text together and left the
-   text a constant 17px right of true centre at every width; and it blinks on
-   a 2.4s cycle, which is motion on a strip that is otherwise completely
-   static. Hiding it outright satisfies both, and the centring stays exact
-   because the row now holds nothing but the message.
-
-   display: none rather than visibility: hidden, so the element leaves the
-   layout entirely instead of reserving a slot with no paint. */
-.pui-sparkle {
-  display: none;
-}
-
-/* The leading run is the message, and it must be able to shrink rather than
-   push the banner wider than the viewport. min-width: 0 is what allows a
-   flex item to shrink below its content width; the ellipsis catches any
-   residual overflow on very narrow screens.
-
-   flex-basis auto with shrink allowed keeps the item at its natural width
-   when it fits, so centring is exact. Pinning a basis instead would offset
-   the text from true centre by half the difference. */
-.banner__leading {
-  min-width: 0;
-  flex: 0 1 auto;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-@media (max-width: 760px) {
-  .pui-sticky-banner,
-  .pui-stickybanner,
-  [class*="pui-sticky"] {
-    font-size: 0.66rem;
-    letter-spacing: 0.02em;
-    /* Type shrinks on a phone; the centring does not change. */
-    justify-content: center;
-  }
-}
-
-/* EyebrowPill: square tag. */
-[class*="pui-eyebrow"] {
-  border-radius: 0 !important;
-  border: 2px solid var(--line) !important;
-  background: var(--surface) !important;
-  color: var(--ink) !important;
-  box-shadow: var(--shadow-sm) !important;
-  font-family: inherit;
-  font-size: 0.75rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-}
-
-/* MockIDE: keep the code, lose the rounded glass.
-
-   The window is .pui-ide exactly. An attribute selector like [class*="pui-ide"]
-   would also match .pui-ide__chrome and .pui-ide__body, painting an orange
-   shadow on elements inside the window, so the shadow is scoped to the exact
-   class and the sharp-corner reset is kept for the descendants.
-
-   The drop shadow is bright orange rather than the usual ink, to separate the
-   dark editor window from the dark footer wordmark behind it.
-
-   No fixed height and no overflow: the window grows with the typed snippet, so
-   there is no scrollbar and nothing is cut off. The page does grow as the
-   snippet types, which is the intended behaviour here. */
-.pui-ide,
-[class*="pui-mockide"] {
-  border-radius: 0 !important;
-  border: 2px solid var(--line) !important;
-  box-shadow: 8px 8px 0 var(--accent) !important;
-  font-family: inherit;
-}
-
-/* Descendants stay square but carry no shadow of their own. */
-[class*="pui-ide"]:not(.pui-ide) {
-  border-radius: 0 !important;
-  box-shadow: none;
-}
-
-/* The window's own dark chrome, in a dark page.
-
-   The library hardcodes this near-black (#0a0a10 body, #11111a chrome,
-   #1a1a26 tab) rather than deriving it from a token, so it does not follow
-   the theme at all. In light that is deliberate and good — a dark editor
-   window on cream paper is the one deliberate exception to the page's
-   inversion. In dark it stops being an exception and becomes a hole: #0a0a10
-   against a #14141a page is a difference of 10/255, so the panel loses its
-   edge and the code appears to float.
-
-   Lift the three surfaces instead of inverting the syntax colours. The token
-   colour (#d5d5e0) and the muted greys already sit correctly on a dark ground
-   in both themes, and re-tinting them per theme would be four more overrides
-   to keep in step for no gain.
-
-   --surface is #1e1e26 and --paper is #14141a in dark, so the window now
-   reads as a panel sitting ON the page rather than a void cut into it, while
-   the chrome and tab stay a step apart from the body as they are in light. */
-[data-theme="dark"] .pui-ide {
-  background: var(--surface);
-}
-
-[data-theme="dark"] .pui-ide__chrome {
-  background: var(--paper);
-}
-
-[data-theme="dark"] .pui-ide__tab {
-  background: var(--line);
-  color: var(--paper);
-}
-
-/* The syntax comment token, in dark.
-
-   The library hardcodes this at #6b7280 and does not vary it by theme, so it
-   is the one token that has to be corrected by hand. It was authored against
-   the library's own #0a0a10 window, where it measures 4.34:1 and passes. This
-   page lifts the window to --surface (#1e1e26) in dark, which is lighter, and
-   that drops the same text to 3.42:1 — a real failure, and caused by the lift
-   above rather than by anything inherent to the dark palette.
-
-   Comments are the lowest-emphasis token in the snippet by design, so this
-   raises them to a lighter grey rather than darkening the window back. --muted
-   is already the page's own dim-text colour and is not used inside the IDE, so
-   borrowing it keeps the window consistent with the rest of the dark page. */
-[data-theme="dark"] .pui-tok-com {
-  color: var(--muted);
-}
-
-/* Fixed height, and the overflow is hidden rather than auto. A fixed height
-   with overflow-y: auto grew a scrollbar once the snippet passed the box.
-
-   The snippet is split across two alternating screens, so this only has to
-   fit the taller one: IDE_SCREEN_2 at 16 lines needs about 387px, and 400px
-   leaves headroom. That is roughly half the 740px the single 31-line snippet
-   needed. Recompute if either screen grows or the font size changes. */
-.pui-ide__body {
-  height: 400px;
-  overflow: hidden;
-}
-
-/* Footer.
-
-   The magnifier is an absolutely-positioned layer filling this box, and it is
-   the ONLY thing in it — BigBack is gone, so there is no nav, no wordmark and
-   no copyright row competing with the reveal. The nav survives in the hero.
-
-   The explicit height is load-bearing because of that. The lens is absolutely
-   positioned, so it contributes nothing to layout; with no in-flow content the
-   footer would collapse to zero and the disc would have no room. 400px holds a
-   disc of ~376px, and clamp() keeps that workable on a short phone screen
-   where 400px would be a third of the viewport.
-
-   `isolation: isolate` keeps the lens compositing against the footer's own
-   paper background rather than whatever sits behind the footer.
-
-   The lens is NOT pointer-events: none, unlike the canvas it replaced: it has
-   to receive pointermove to move the scope. With nothing layered above it
-   now, the whole box is live. */
-/* The top border, drawn as a pseudo-element rather than as a real border.
-
-   A border paints in the footer's own background layer, which is BELOW any
-   positioned descendant — and the lens is `position: absolute` with the disc
-   now bleeding past the footer's edges. So a real border-top was still
-   computed (verified 3px solid) but was painted over by the disc wherever the
-   two met, which is most of the line: the border was there and invisible.
-
-   A pseudo-element with a z-index above the lens puts the rule back on top
-   without moving the footer's edge, so the box the disc is measured against is
-   unchanged.
-
-   It sits at bottom: 100% — i.e. ON the footer's top edge, outside it — rather
-   than inset into the top 3px of the panel. A rule drawn inside the panel
-   covers the top of the orange rather than capping it, so the footer's own
-   colour starts 3px below where the box does; the two edges then read as
-   different lines and the footer looks inset rather than finished. Sitting on
-   the boundary, the rule is the edge. */
-.footer::before {
-  content: "";
-  position: absolute;
-  inset: auto 0 100% 0;
+.eyebrow::after {
+  content: '';
   height: 3px;
-  background: var(--line);
-  /* Above .footer__lens (z-index 0) but below nothing else in the footer. */
-  z-index: 1;
-  pointer-events: none;
+  flex: 1;
+  background-color: hsl(var(--foreground));
 }
 
-.footer {
-  position: relative;
-  isolation: isolate;
-  background: var(--paper);
-  /* Breathing room above the footer, so the workbench panel does not sit
-     flush against it. The two were touching: measured 0px between the
-     workbench's bottom edge and the footer's top.
+/* --- Marquee rail ------------------------------------------------------- */
 
-     This has to clear the disc as well as the panel. The lens bleeds
-     LENS_BLEED (56px) above the footer, so anything less than that and the
-     circle is still crossing the workbench when it starts. 72px leaves the
-     disc's full bleed inside the gap with 16px to spare, and the disc's
-     overflow is visible so the circle passes over the workbench's bottom
-     edge rather than being cut at it — which is the intended effect, the
-     lens overlapping the content above it. */
-  margin-top: 72px;
-  /* The footer's height, named once so the type inside it can be derived from
-     it. A vh-based font size alone drifts out of step with this clamp: at
-     320x568 the box sits on its 130px floor while 1.26vh measures only 7px,
-     so the type ended up a third of the height it was allowed. Referencing
-     the same value keeps the two locked together at every viewport. */
-  --footer-h: clamp(130px, 21vh, 200px);
-  /* Must match LENS_BLEED in App.tsx, which uses it for the diameter. */
-  --lens-bleed: 56px;
-  /* box-sizing moves the padding INSIDE --footer-h instead of adding to it, so
-     the disc has somewhere to bleed without the band getting any taller.
-     Without this the footer is content-box and any padding here would push
-     the page half again as long.
-
-     Padding is 0. It was horizontal, at half the bleed, to keep the disc off
-     the viewport's left and right edges — but the disc is centred and only
-     grows vertically, so the horizontal padding did nothing for it while
-     insetting the lens by 28px a side. That inset is what kept the queries
-     from reaching the page edges, and the queries are supposed to span the
-     full width.
-
-     The disc does reach the footer's own edges above and below, which is where
-     the bleed matters: the workbench leaves 72px of bottom padding above the
-     footer, and the disc's overflow is visible, so the circle passes over the
-     border and the paper rather than being cut at it. */
-  box-sizing: border-box;
-  padding: 0;
-  height: var(--footer-h);
+/* A repeating logo strip. The animation is on the inner track only, and the
+   track is rendered twice back-to-back with the copy `aria-hidden`, so the
+   seam at 50% is invisible and a screen reader hears each name once. */
+.rail {
+  overflow: hidden;
+  border-block: 3px solid hsl(var(--foreground));
+  background-color: hsl(var(--accent));
+  padding-block: 0.875rem;
 }
 
-/* The lens fills the footer.
-
-   .footer__lens is a plain wrapper that exists only to be measured — the
-   diameter is a JS prop (it has to be, Goldeneye takes a number) and it is
-   derived from this box's height with a ResizeObserver. The component itself
-   is .footer__lens-inner and does the actual filling.
-
-   The library defaults to min-height: 360px and a crosshair cursor. The height
-   is overridden so the lens matches the footer rather than forcing it taller,
-   and the crosshair is kept: it advertises that the footer is interactive
-   rather than a static print. */
-.footer__lens {
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  pointer-events: auto;
+.rail__track {
+  display: flex;
+  width: max-content;
+  gap: 3rem;
+  align-items: center;
+  animation: rail-scroll 30s linear infinite;
 }
 
-.footer__lens-inner {
-  width: 100%;
-  height: 100%;
-  min-height: 0;
-  /* The library's own .pui-goldeneye rule sets `overflow: hidden`, and that is
-     what stops a disc larger than this box from being a disc at all. The scope
-     is `position: absolute; inset: 0` — the size of THIS element — and the
-     reveal is a clip-path circle painted inside it. Overflow hidden does not
-     scale a clipped circle, it CROPS it: with a 119.5px radius in a 127px-tall
-     box the top and bottom of the circle were cut off, and the lens painted
-     as a 236x126 lozenge at a 1.87 aspect ratio instead of a circle.
-
-     So the crop has to go, and this element has to be tall enough to hold the
-     whole circle. It is grown by the bleed on each side and centred on the
-     footer, which keeps its centre where the pointer expects it while letting
-     the disc pass over the footer's edges instead of being cut at them. */
-  overflow: visible;
-  height: calc(100% + var(--lens-bleed) * 2);
-  margin-top: calc(var(--lens-bleed) * -1);
-  /* Confine the lens to the footer, so the disc stops crossing the top edge.
-
-     Both layers overhang it. The box is grown by the bleed on each side and
-     starts LENS_BLEED (56px) above the footer, so the orange panel paints
-     56px over the page and the disc's ink arc crosses the top border — which
-     is what read as a black top border. It is not the border element: the
-     border is fine, but the lens sits above the footer's ::before, so
-     elementFromPoint on the footer's top edge returned the lens and the disc
-     covered the rule.
-
-     The mask is a HARD stop at the footer's own top edge, not a fade, and the
-     two identical stops at the same offset are what make it hard: a single
-     `transparent 0, #000 var(--lens-bleed)` pair is a 56px RAMP, which is what
-     the first attempt used and it left the disc visible above the border as a
-     soft grey gradient — measurably still there, just fainter. A fade is the
-     same overhang in a different form; the hard stop puts the panel's edge
-     exactly on the footer's edge, which is the point.
-
-     The disc's top arc is therefore cut off at that line — a flat chord about
-     200px wide across a 242px circle — but the arc is still curved everywhere
-     below it, and letting it through is what produced the black line.
-
-     Only the top is masked. The bottom bleed is the half that reads correctly:
-     the disc emerging over the page's lower edge into the space below, so it
-     is left alone. */
-  -webkit-mask-image: linear-gradient(
-    to bottom,
-    transparent 0,
-    transparent var(--lens-bleed),
-    #000 var(--lens-bleed),
-    #000 100%
-  );
-  mask-image: linear-gradient(
-    to bottom,
-    transparent 0,
-    transparent var(--lens-bleed),
-    #000 var(--lens-bleed),
-    #000 100%
-  );
+.rail:hover .rail__track {
+  animation-play-state: paused;
 }
 
-/* Both layers in caps.
-
-   Applied in CSS rather than by rewriting the strings, so the component keeps
-   literals that read as typed ("resume") and the capitals stay a presentation
-   decision in one place. It also means the two layers cannot drift apart: both
-   are the same element type, so one selector covers the base and the scope.
-
-   This is a real change to the type's shape, not just its case. "resume" is
-   all lowercase, so its ink was only x-height — the tallest glyph reached 69px
-   in a 137.72px em. In caps the ink rises to the cap height, which moves the
-   optical centre of the word. Any vertical nudge has to be measured AFTER
-   this, not before. */
-.footer__lens .pui-goldeneye__headline {
-  text-transform: uppercase;
-  /* The library's own weight. It asks for 900 on the headline, and that is
-     what this uses.
-
-     Worth knowing what 900 does to this particular family: Instrument Serif
-     ships a single weight (400 plus italics), so there is no 900 to select
-     and the browser SYNTHESISES one by smearing the outlines. On a face this
-     high in contrast that closes up the thin strokes — the hairline serifs
-     and the joins between bowl and stem fill in — so the caps come out
-     heavier and slightly blotchier than the drawing. 400 renders the
-     letterforms as designed.
-
-     Kept at 900 because that is the library's styling and this footer is
-     meant to read as the library's component. Flagging the trade rather than
-     making the call: revert the one line to 400 if the caps look clogged. */
-  font-weight: 900;
-  /* Optically centred on the ORANGE YOU CAN SEE, not on the footer box.
-
-     This is the second attempt at this nudge and the first two were measured
-     against the wrong rectangle, which is why they never looked right.
-
-     The footer BOX is 130px. The visible orange is 186px: the top is masked
-     flush with the box, but the bottom bleed lets the panel run LENS_BLEED
-     (56px) further down, into the page's bottom padding. So the band a viewer
-     actually sees is 56px taller than the element being centred, all of the
-     extra at the BOTTOM. Measured: box 5435..5565, visible orange 5435..5620.
-
-     Centring on the box therefore leaves the word riding high — its ink at
-     5447..5549 has a centre of 5498, which is 29.5px above the centre of the
-     visible orange at 5527.5. Every earlier nudge was a few pixels against a
-     30px error, which is why nudging down by 3 then 6 never closed the gap.
-
-     The correction is the FULL bleed, LENS_BLEED (56px), not half of it.
-     Half was tried first on the reasoning that the extra band hangs below the
-     box and so only half the offset would be needed; that is wrong, because
-     the headline is centred in the box while the target is the centre of box
-     PLUS bleed, which is a whole bleed away. Measured: at 3px the ink sat
-     29.5px high, at 28px it sat 17.5px high — the nudge moved it by exactly
-     the 25px applied, and the error fell by the same 12px only because the
-     band is 185px rather than 130. The residual is the other half of the
-     bleed.
-
-     Stated as a literal rather than a calc() so the two mistakes that cost
-     time here — halving it, and reading the CSS var as authoritative — cannot
-     be repeated silently. LENS_BLEED is 56px in App.tsx and --lens-bleed
-     matches; if either changes, 60px = bleed + the 4px of optical
-     overshoot, and the CSS var will silently stop describing this value.
-
-     Verified in pixels against the visible band at 56px: 38px of clearance
-     above and 45px below, so 3.5px still short. 60px is that plus the
-     residual, and lands the word on the centre. The measurement chain that
-     got here — 29.5px high at 3px, 17.5px at 28px, 3.5px at 56px.
-
-     Still worth recording that the type is centred within its own box: the
-     line box measures 179px with a midpoint of 443 against the footer's 442,
-     and before any nudge the ink ran 16px above and 17px below inside the
-     box. The layout was never wrong. The reference rectangle was. */
-  top: 60px;
+@keyframes rail-scroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
 }
 
-/* The headline typeface.
-
-   The library styles the headline `font-family: var(--pui-goldeneye-font,
-   var(--pui-font-sans))`, and ships --pui-font-serif as Instrument Serif. So
-   pointing --pui-goldeneye-font at --pui-font-serif is the library's own serif
-   variant — not a hardcoded family list, and not the fontFamily prop, which
-   was overriding the variable and pinning Space Mono here.
-
-   NAMING THE FONT IS NOT THE SAME AS LOADING IT, and that distinction cost
-   two commits. The library declares "Instrument Serif" but ships no @font-face
-   and no font binaries — `grep -c @font-face` on its stylesheet returns 0 —
-   so the name resolves to nothing on its own. Our own Google Fonts import
-   asked for IBM Plex Mono, Space Mono and JetBrains Mono and not this one, so
-   the browser fell through the stack to Georgia. getComputedStyle reported
-   `"Instrument Serif", ui-serif, Georgia, serif` the whole time, which reads
-   like confirmation and is not: it reports the DECLARED stack, never which
-   family actually won.
-
-   The tell is document.fonts, which listed every Instrument Serif face as
-   "unloaded", and a width comparison — "RESUME" measures 299.9px in
-   Instrument Serif against 425.3px in Georgia at the same size, so those are
-   not the same glyphs. Instrument Serif is now in the @import at the top of
-   this file, and document.fonts reports the normal 400 face as "loaded".
-
-   This is the one thing still set on the component, because the serif is the
-   point of the change. Everything else below is left at the library's
-   defaults. */
-.footer__lens {
-  /* Instrument Serif, the library's own serif variant, selected through the
-     variable the library already reads rather than by hardcoding a family or
-     by passing the fontFamily prop (which overrides this variable outright and
-     was what pinned Space Mono here before).
-
-     --pui-bg and --pui-fg are the library's two colours: the base layer paints
-     --pui-bg behind --pui-fg text, and the scope inverts the pair inside the
-     circle. Repointed at this page's accent and ink so the panel is orange
-     rather than the library's near-black, which had made the footer's ink top
-     border invisible — rgb(20,20,26) on rgb(8,8,11) is a difference of 12/255
-     in red and nothing to the eye. The scope still inverts to ink, which is
-     what keeps the revealed name legible: ink on orange measures 5.7:1, and
-     the inversion is what makes the disc read as a lens rather than as a
-     second panel.
-
-     --pui-fg points at --on-accent rather than --ink, and that indirection is
-     what makes the lens theme-invariant. Both layers are text ON the orange
-     panel, so they are bound by the same contrast rule as the solid buttons,
-     and that rule flips with the theme: in light the orange is a dark-ish
-     #ff4f18 under white ink, in dark it is a light #ff7a45 under dark ink.
-     Reading --ink here instead made the base word cream-on-orange in dark mode
-     at 2.25:1, and the scope — which paints this colour as its own background —
-     went with it. */
-  --pui-goldeneye-font: var(--pui-font-serif);
-  --pui-bg: var(--accent);
-  --pui-fg: var(--on-accent);
-}
-
-/* The last section sits above the IDE window, whose own container supplies
-   the bottom spacing. Its lower margin and the page's bottom padding were
-   both counting, which opened a 152px gap before an otherwise 400px-tall
-   box. Drop the page padding and let the workbench own the space. */
-.page > .section:last-of-type {
-  margin-bottom: 0;
-}
-
-/* Consistent with the 72px section rhythm. */
-.workbench {
-  position: relative;
-  z-index: 1;
-  max-width: var(--max);
-  margin: 0 auto;
-  padding: 72px 24px 72px;
-}
-
-/* GlassCard is still the layout primitive, so neutralize its glass entirely. */
-.pui-glass,
-[class*="pui-glasscard"] {
-  backdrop-filter: none !important;
-  background-color: var(--surface) !important;
-}
-
+/* Pause for anyone who asked the OS to reduce motion. The rail is decoration;
+   a static strip costs nothing. */
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
   }
 
-  .btn {
-    transition: none;
+  .rail__track {
+    animation: none;
   }
+}
+
+/* --- Section colour bands ---------------------------------------------- */
+
+/* Each section gets its own flat field so the boundaries are visible while
+   scrolling, not just where a border happens to fall. The bands alternate
+   between the two neutrals and take one saturated colour each, so consecutive
+   sections never repeat and the eye can tell where it is without reading a
+   heading.
+
+   Flat fills on purpose. The neubrutalist language is high-contrast blocks
+   and hard edges; a gradient or pattern behind the cards would compete with
+   the cards, which are the things actually being read.
+
+   The colour is on the <section>, and the hard 3px border between bands is
+   what sells the change — a border alone reads as a divider, a border plus a
+   different fill reads as a new place. */
+.band-paper {
+  background-color: hsl(var(--background));
+}
+
+.band-muted {
+  background-color: hsl(var(--muted));
+}
+
+.band-primary {
+  background-color: hsl(var(--primary));
+}
+
+.band-secondary {
+  background-color: hsl(var(--secondary));
+}
+
+.band-accent {
+  background-color: hsl(var(--accent));
+}
+
+.band-info {
+  background-color: hsl(var(--info));
+}
+
+/* A band whose fill is dark needs its type inverted, or black text vanishes
+   into it. Kept as a separate class from the fills above so the two stay in
+   step when a band colour changes.
+
+   This is not hypothetical under the cherry theme, where it is load-bearing
+   on two of the five bands. Measured against the theme's own --foreground
+   (a near-black) and, in brackets, against white:
+
+     primary   cherry red    3.19 : 1  (5.44 with white)  <- fails AA on black
+     secondary dark green   1.81 : 1  (9.58 with white)  <- fails badly
+     accent    orange       7.90 : 1  (2.19 with white)  <- black is right
+     info      blue         8.17 : 1  (2.12 with white)  <- black is right
+
+   So the rule is not "saturated bands are dark" — it is that the two dark
+   cherry hues need light ink and the two light ones need the default. Each
+   section therefore declares its own ink, and `band-ink-light` is only applied
+   where the measurement above says it must be. */
+.band-ink-light {
+  color: hsl(var(--background));
+}
+
+.band-ink-light .eyebrow::after {
+  background-color: hsl(var(--background));
+}
+
+/* Secondary text on a saturated band.
+
+   --muted-foreground is a mid grey that goes muddy on any strong fill, so
+   anything that is not the primary ink needs this instead. It is deliberately
+   NOT scoped to .band-ink-light: the light bands (orange, blue) take the
+   theme's near-black at 7.9:1 and 8.2:1 for body text, but their secondary
+   text still needs lifting off the mid-grey — and the bands with a dark fill
+   need it as light ink rather than dark.
+
+   The two therefore differ only in which token they reach for, and the section
+   decides that with .band-ink-light. */
+.band-sub {
+  color: hsl(var(--foreground) / 0.72);
+}
+
+.band-ink-light .band-sub {
+  /* Opaque, not a percentage of the light token.
+
+     A translucent white over a mid-tone fill is a third colour, not a tint of
+     either: at 78% over cherry red it composited to 3.63:1, under AA for
+     body text, because the red bleeding through pulls the result toward the
+     luminance of the fill. The hero's summary paragraph — the one line on the
+     page saying what the person does — was the element that measured it.
+
+     Full opacity over cherry red is 5.44:1. The hierarchy the alpha was there
+     to create is kept by the size and weight of the type instead, which is
+     how it should have been doing it: the summary is `band-sub` because it
+     is a secondary element, not because it is a slightly transparent one. */
+  color: hsl(var(--background));
+}
+
+/* Cards are exempt.
+
+   `color` inherits, so `.band-ink-light` reaches every descendant — including
+   the text inside a Card, which has its own near-white background. Light ink
+   on a white card measured 1.04:1, which is invisible text; the Project
+   bullets hit exactly this. A card carries its own surface, so it has to carry
+   its own ink too.
+
+   This is why the fix belongs here rather than on the individual card: any
+   card dropped into a light-ink band is wrong by default, and there are
+   several. `color: inherit` would inherit the band's light ink and so does
+   not help; the card's own tokens have to be restated. */
+.band-ink-light [class*="bg-card"],
+.band-ink-light .card {
+  color: hsl(var(--card-foreground));
+}
+
+.band-ink-light [class*="bg-card"] .band-sub,
+.band-ink-light .card .band-sub {
+  color: hsl(var(--foreground) / 0.72);
+}
+
+/* --- One press, everywhere ---------------------------------------------- */
+
+/* Every raised thing on this page presses exactly the way a BoldKit `Badge`
+   does: slide down-right by the shadow offset, and lose the shadow as it goes
+   under, over a flat 200ms.
+
+   Badge was the reference because it is the smoothest thing in the library —
+   a single `transition duration-200` on one element, no keyframe competing
+   with it, and no second rule reaching in to move the shadow. Everything
+   interactive now matches that.
+
+   Two earlier attempts are worth recording, because both failed in ways that
+   were invisible until inspected:
+
+   The first defined a local `.bk-press`, which collided with BoldKit's own
+   `.bk-press` in motion.css — the library's lifts up-left and grows the
+   shadow, the local one pressed down-right and removed it, and the winner was
+   silently decided by source order. That was the original jank on the email
+   buttons. So the class is not `bk-press`; it is `bk-lift`, which no library
+   rule can collide with.
+
+   The second used BoldKit's `bk-press` directly, which removed the collision
+   but not the behaviour: the library's hover grows the shadow, and "all hover
+   interactions must match the badge" is a stricter requirement than "no
+   longer janky". The badge's own motion is the one every element uses. */
+.bk-lift {
+  /* The badge's own timing: a flat 200ms on the CSS default easing, not the
+     library's snap curve. Matching the badge means matching that too. */
+  transition: transform 200ms ease, box-shadow 200ms ease;
+}
+
+.bk-lift:hover,
+.bk-lift:active {
+  transform: translate(4px, 4px);
+  box-shadow: none;
+}
+
+/* The Button primitive carries `.bk-interactive`, which sets its own 150ms
+   snap-curve transition on transform, box-shadow, background-color,
+   border-color, color and opacity. That outranks a plain `.bk-lift` rule for
+   the duration and the easing, so the buttons kept the 0.15s snap while every
+   non-Button element got the badge's 0.2s ease — the page ended up with two
+   hover timings, which is the inconsistency this class exists to remove.
+
+   `!important` is the blunt instrument, but it is the correct one here: the
+   competing declaration lives in a vendored component and has to win on a
+   pseudo-class that the local class also targets. Re-specifying all six
+   properties would be a copy of the library rule that drifts on the next
+   upgrade. This one line pins the timing and nothing else — the motion itself
+   is still defined once, in .bk-lift above. */
+.bk-lift.bk-interactive {
+  transition: transform 200ms ease, box-shadow 200ms ease !important;
+}
+
+/* On the near-black footer band a near-black shadow is invisible, so the offset
+   is drawn in the accent. Same motion as everywhere else, just a visible
+   shadow to consume — and the press still ends in `none`, so the two states
+   match. */
+.bk-lift--on-dark {
+  box-shadow: 4px 4px 0 0 hsl(var(--accent));
+}
+
+/* --- The accordion, without the library's cross-talk --------------------- */
+
+/* The jank, and what causes it.
+
+   BoldKit's theme ends with two bare attribute rules:
+
+       [data-state="open"]   { animation: zoom-in  150ms; }
+       [data-state="closed"] { animation: zoom-out 100ms; }
+
+   They are written for popovers, menus and dialogs. Radix puts `data-state`
+   on the accordion trigger and content too, so both pick them up: the trigger
+   scales 0.95 -> 1 and fades 0 -> 1 while the content animates its height
+   open. Two animations on the same gesture, on different properties, with
+   different durations and different easings — the row scaled up while the
+   panel grew, then the whole thing faded. That is the wobble.
+
+   It cannot be fixed by restating the trigger's own classes, because the
+   competing declaration is on the element itself and arrives from a bare
+   attribute selector in vendored CSS. So it is cancelled here, by name.
+
+   The offending rule reaches three elements per role, not one, because Radix
+   puts `data-state` on all of them: the AccordionItem wrapper, the h3 header
+   around the trigger, and the region panel. All three were scaling and fading
+   on every open and close, on top of the panel's height animation — so the
+   whole row pulsed while its contents grew.
+
+   They are cancelled by name here, and the panel is then given back its own
+   height animation — because `none` would leave it with nothing, trading a
+   jank for a row that snaps open.
+
+   The restore uses BoldKit's `animate-accordion-up/down` utilities rather than
+   restating the keyframes. That matters: the theme's own copies of
+   `accordion-up`/`accordion-down` read
+   `var(--radix-accordion-content-height)` with no fallback, and Radix sets
+   that as a bare number ("396"), so the declaration is invalid and the
+   animation runs to a 3px box. Tailwind's copy of the same keyframes carries
+   the full fallback chain and resolves correctly, and the utilities compile
+   to that one. Rewriting the keyframes here would have meant copying the
+   fallback list and hoping it stayed in step.
+
+   Net result, and what to check if this ever regresses: trigger, item and
+   header report `animation: none`; the panel reports
+   `animate-accordion-down` when open and actually reaches its content height.
+   One animation, on one element, doing one job. */
+#experience [data-state] {
+  animation: none;
+}
+
+#experience [data-state][role="region"] {
+  animation-name: accordion-down;
+  animation-duration: 200ms;
+  animation-timing-function: var(--ease-out);
+}
+
+#experience [data-state="closed"][role="region"] {
+  animation-name: accordion-up;
+}
+
+/* The vertical rule down the left of the experience list.
+
+   One continuous 3px rail behind the markers rather than a segment between
+   each pair, so it does not have to know how tall the rows are — with most
+   rows collapsed and heights arbitrary, per-item connectors are a broken
+   ruler. The rail is a pseudo-element on the list, so it adds no markup.
+
+   It stops short of the last marker rather than running past it, which is what
+   `bottom` is for: a rail that overshoots the final dot implies an eighth role
+   that does not exist. */
+.timeline-rail {
+  position: relative;
+}
+
+/* `left` puts the 3px rule through the *centre* of the markers.
+
+   The arithmetic, since it is easy to get wrong in both directions: the list
+   carries pl-12, and each marker is pulled back out of that gutter by
+   -left-12, so a marker's left edge lands on the list's own left edge and its
+   2rem width puts its centre 1rem in. An absolutely positioned ::before
+   measures `left` from the padding box, which for this element is the list's
+   border box, so 1rem is already the marker's centre — margin-left then pulls
+   the 3px rule left by half its own width to sit exactly on that line.
+
+   (An earlier version used 4rem, reasoning from the padding rather than the
+   resulting position. It put the rail 48px — exactly the pl-12 — to the right
+   of the markers, behind the cards instead of through them.) */
+.timeline-rail::before {
+  content: "";
+  position: absolute;
+  top: 1.5rem;
+  bottom: 2.5rem;
+  /* Geometry, measured rather than reasoned about. The list's left edge is at
+     50px and the marker is 32px wide starting at 53px, so the marker centre is
+     69px. `left: 1rem` puts the rule's start at 66px, so it needs +1.5px — half
+     its own width — to straddle 69px.
+
+     The sign matters: a negative margin here was the obvious-looking guess and
+     put the rule 3px to the *left* of the markers, which reads as a hairline
+     misregistration rather than as a rail. */
+  left: 1rem;
+  width: 3px;
+  margin-left: 1.5px;
+  background-color: hsl(var(--foreground));
+}
+
+/* The marker that sits on the rail. A square with a hard border and its own
+   offset shadow, matching the card language; `current`-role markers are filled
+   in the theme's primary so the current job is findable without reading.
+
+   `position` is deliberately NOT declared here. An earlier version set
+   `relative`, which silently overrode the `absolute` utility on the element —
+   app.css is unlayered, so it outranks Tailwind's layered utilities the same
+   way the theme's `*` rule does. The marker then sat in normal flow above the
+   accordion heading instead of over the rail, and pushed the heading down
+   35px: exactly the odd gap above the h3s. The class supplies the z-index to
+   beat the rail, and the element's own className supplies the positioning. */
+.timeline-dot {
+  z-index: 1;
+  display: flex;
+  height: 2rem;
+  width: 2rem;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border: 3px solid hsl(var(--foreground));
+  background-color: hsl(var(--card));
+  box-shadow: 4px 4px 0 0 hsl(var(--shadow-color));
+}
+
+.timeline-dot--current {
+  background-color: hsl(var(--primary));
+}
+
+/* --- Patterned bands --------------------------------------------------- */
+
+/* Some sections carry a pattern over their colour, not just the colour.
+
+   The vocabulary is BoldKit's own — grid, halftone, diagonal lines, checker —
+   the patterns the theme ships in globals.css as `.grid-pattern*` and
+   `.bk-halftone*`. They are re-declared here rather than referenced because
+   the library versions draw with a fixed hsl() fallback (30% of a literal
+   black) and these bands need to follow the theme's --foreground, and because
+   the alpha has to come down for a section background where the library's
+   value is tuned for a card-sized swatch.
+
+   `data-pattern` picks one and layers it over whichever `band-*` the section
+   already has, so a section keeps its colour and gains texture.
+
+   The one rule: **patterns go on the light bands, never the dark ones.**
+   Every pattern here draws with --foreground, which is a near-black — on the
+   green Projects band that is near-dark-on-near-dark and reads as a smear,
+   and on the black footer it is black on black. The two dark bands stay flat
+   by design, not by omission.
+
+   `::before` carries the pattern rather than a background-image on the
+   section, because the sections already have a `background-color` from
+   `band-*` and a second background layer would have to compose with it. The
+   pseudo-element takes `inset: 0` and sits under the content.
+
+   `pointer-events: none` so the pattern layer never intercepts a click meant
+   for a card, a link or the accordion underneath it. */
+/* `position: relative` is load-bearing. The pattern is an absolutely
+   positioned ::before, and a statically positioned section is not a containing
+   block for it — the pseudo-element would resolve `inset: 0` against the
+   nearest positioned ancestor (or the viewport), so the pattern would float
+   over the top of the page rather than sitting inside its own section.
+
+   Declared here rather than as a Tailwind `relative` on five sections so the
+   requirement cannot be forgotten on the sixth. */
+[data-pattern] {
+  position: relative;
+}
+
+[data-pattern]::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Lift the section's own content above the pattern layer. Without this the
+   pattern would paint over the text at 20% alpha, which reads as a rendering
+   fault rather than as texture. */
+[data-pattern] > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* Which pattern. Each is a one-liner over the theme's own definitions; the
+   alpha is raised slightly over the library default on light bands so the
+   texture is actually visible at a glance rather than only on close
+   inspection. */
+[data-pattern="grid-sm"]::before {
+  background-image:
+    linear-gradient(hsl(var(--foreground) / 0.16) 1px, transparent 1px),
+    linear-gradient(90deg, hsl(var(--foreground) / 0.16) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+[data-pattern="grid"]::before {
+  background-image:
+    linear-gradient(hsl(var(--foreground) / 0.16) 1px, transparent 1px),
+    linear-gradient(90deg, hsl(var(--foreground) / 0.16) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+[data-pattern="grid-lg"]::before {
+  background-image:
+    linear-gradient(hsl(var(--foreground) / 0.13) 1px, transparent 1px),
+    linear-gradient(90deg, hsl(var(--foreground) / 0.13) 1px, transparent 1px);
+  background-size: 60px 60px;
+}
+
+[data-pattern="dots"]::before {
+  background-image: radial-gradient(
+    circle,
+    hsl(var(--foreground) / 0.22) 1px,
+    transparent 1px
+  );
+  background-size: 16px 16px;
+}
+
+[data-pattern="dots-dense"]::before {
+  background-image: radial-gradient(
+    circle,
+    hsl(var(--foreground) / 0.2) 1px,
+    transparent 1px
+  );
+  background-size: 10px 10px;
+}
+
+[data-pattern="halftone"]::before {
+  background-image: radial-gradient(
+    circle,
+    hsl(var(--foreground) / 0.18) 1.5px,
+    transparent 1.5px
+  );
+  background-size: 12px 12px;
+}
+
+[data-pattern="diagonal"]::before {
+  background-image: repeating-linear-gradient(
+    45deg,
+    transparent,
+    transparent 10px,
+    hsl(var(--foreground) / 0.12) 10px,
+    hsl(var(--foreground) / 0.12) 11px
+  );
+}
+
+[data-pattern="checker"]::before {
+  background-image:
+    linear-gradient(45deg, hsl(var(--foreground) / 0.08) 25%, transparent 25%),
+    linear-gradient(-45deg, hsl(var(--foreground) / 0.08) 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, hsl(var(--foreground) / 0.08) 75%),
+    linear-gradient(-45deg, transparent 75%, hsl(var(--foreground) / 0.08) 75%);
+  background-size: 40px 40px;
+  background-position:
+    0 0,
+    0 20px,
+    20px -20px,
+    -20px 0;
+}
+
+/* Dark mode, and the part that actually took work: the *fills*, not the ink.
+
+   The band classes hardcode a colour per section — orange for Skills, blue for
+   Toolkit — because in light mode that is the whole job. Under `.dark` those
+   fills stay exactly as bright while `--foreground` flips to off-white, so
+   every saturated band ends up with near-white text on orange: measured 2.04:1
+   on the header's nav links and on the Skills heading.
+
+   Swapping the ink alone (`.dark .band-ink-light` below) does not fix it, and
+   it is worth being clear about why: the header and Skills do *not* carry that
+   class, because on a light orange fill the correct ink is the theme's
+   near-black — which is what they already use. They fail in dark mode for the
+   same reason everything else does: the text is inherited from `body`, and
+   `body` changed. No ink rule on a section that never had one will help.
+
+   The fix has to be at the fill. These three are re-pointed at darker versions
+   of the same hues, so the page keeps its palette in both modes and the ink
+   follows automatically from the token swap.
+
+   The lightnesses are computed, not guessed: for each hue, the *brightest*
+   lightness that still clears 5:1 against the dark mode's off-white text.
+   Orange 34% (5.16:1), green 33% (5.22:1), blue 43% (5.05:1). Picking the
+   brightest passing value rather than the first one found matters — an earlier
+   pass took 42% for orange and measured 3.61:1, which is still a failure, just
+   a less embarrassing one.
+
+   `--background`-based bands (paper, muted) already move on their own, since
+   they are defined in terms of tokens. Only the saturated three need this. */
+.dark .band-accent {
+  background-color: hsl(28 90% 34%);
+}
+
+.dark .band-secondary {
+  background-color: hsl(151 37% 33%);
+}
+
+.dark .band-info {
+  background-color: hsl(212 90% 43%);
+}
+
+/* Dark mode inverts the ink decision.
+
+   The band classes pick their ink by how light their *fill* is, and that
+   judgement is made against the light palette. Under `.dark` the fills are
+   re-pointed at dark tokens — the header's orange stays orange, but
+   --background becomes a near-black — so the same fill now needs the opposite
+   ink. Left alone, every `band-ink-light` section renders light text on a dark
+   fill it was never paired with: 31 elements measured below 4.5:1 in dark mode
+   before this rule, including all four nav links at 2.04:1.
+
+   Swapping the two is the whole fix. A section that chose light ink in light
+   mode chooses dark ink in dark mode, and vice versa, because the fill it was
+   judged against has swapped too.
+
+   `band-sub` is included for the same reason and follows its parent. */
+.dark .band-ink-light {
+  color: hsl(var(--foreground));
+}
+
+.dark .band-ink-light .band-sub {
+  color: hsl(var(--foreground) / 0.72);
+}
+
+.dark .band-ink-light .eyebrow::after {
+  background-color: hsl(var(--foreground));
+}
+
+.dark .band-sub {
+  color: hsl(var(--background) / 0.78);
+}
+
+/* The floating controls use --background and --foreground directly, so they
+   follow the mode on their own with no help. This is here only to say so,
+   because the obvious next thought is that they need a dark-mode rule and they
+   do not. */
+
+/* Muted text on a saturated fill.
+
+   `text-foreground/75` is a reasonable default on the light bands, where the
+   fill is pale and the near-black text at 75% still clears 4.5:1 easily. On the
+   saturated bands it does not: the CTA card is `band-accent`, and off-white at
+   75% over the dark-mode orange (165,81,9) composites to (227,205,187) for a
+   measured 3.62:1. At 90% it reaches exactly 4.5:1.
+
+   So the alpha is raised only under `.dark`, and only where the text sits on a
+   band fill. Light mode is untouched — the pale fills do not need it, and
+   raising the alpha there would make body text unnecessarily heavy for no gain.
+
+   Applied to the `/75` utility specifically rather than to every muted colour,
+   because a global change would also affect text on the near-black bands,
+   which passes comfortably at 75% and would lose a step of hierarchy for
+   nothing. */
+.dark .band-accent .text-foreground\/75,
+.dark .band-secondary .text-foreground\/75,
+.dark .band-info .text-foreground\/75 {
+  color: hsl(var(--foreground) / 0.9);
+}
+
+/* --- Floating controls ------------------------------------------------- */
+
+/* The pair of floating controls: a theme switch stacked directly above a
+   back-to-top, pinned to the bottom right.
+
+   One column, not two, so the two controls share a single right edge and read
+   as a single object. The gap is 1rem, which is one shadow-offset plus a
+   little air — closer than that and their hard shadows collide, further and
+   they stop reading as related.
+
+   `bottom-6 right-6` matches the reference template. The stack is `flex
+   flex-col`, so the theme button is first in the DOM and the back-to-top sits
+   below it — which matches the reading order for keyboard users: theme
+   (a global preference) then navigation.
+
+   `z-50` clears the sticky header's `z-40`. The controls must stay clickable
+   over content, and the header must stay above the pattern layers.
+
+   The controls themselves are NOT given `bk-lift`, because that class presses
+   down-right and these float. The hover here lifts up-left and grows the
+   shadow, which is what makes a floating control feel raised off the page
+   rather than shoved into it — the opposite gesture, for the opposite
+   spatial relationship. It is declared here rather than per-button so both
+   controls are guaranteed to match. */
+.float-stack {
+  position: fixed;
+  right: 1.5rem;
+  bottom: 1.5rem;
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.float-btn {
+  display: flex;
+  height: 3.5rem;
+  width: 3.5rem;
+  align-items: center;
+  justify-content: center;
+  /* `rounded-full`, not a `rounded-*` step. These two controls are the only
+     fully circular elements on the page — every other surface in the
+     neubrutalist system is a hard rectangle, and that is the point of the
+     style. A rounded-square compromise would read as an accident rather than
+     as a decision, and it would sit oddly against the square cards and the
+     square scroll shadows behind it. Going all the way to a circle makes the
+     floating pair read as a different kind of object from the page furniture:
+     chrome that floats above the content rather than part of it.
+
+     50% rather than a large fixed radius, so it stays a true circle at the
+     48px mobile size without a second value. */
+  border-radius: 9999px;
+  border: 3px solid hsl(var(--foreground));
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+  /* The offset shadow is kept, and it is what stops the circle reading as
+     flat. Without it a round button on a busy patterned page looks like a
+     sticker; with it, it is clearly raised off the surface. The hard edge
+     (no blur) matches every other shadow on the site. */
+  box-shadow: 4px 4px 0 0 hsl(var(--foreground));
+  transition:
+    transform var(--bk-dur-snap) var(--bk-ease-snap),
+    box-shadow var(--bk-dur-snap) var(--bk-ease-snap),
+    background-color var(--bk-dur-snap) var(--ease-out);
+}
+
+.float-btn:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0 0 hsl(var(--foreground));
+}
+
+.float-btn:active {
+  transform: translate(2px, 2px);
+  box-shadow: 2px 2px 0 0 hsl(var(--foreground));
+}
+
+/* The back-to-top only appears once there is somewhere to go back to. It is
+   hidden at the top of the page and fades in below the fold, so a visitor
+   landing on the hero does not get a button that does nothing.
+
+   `opacity-0` plus `pointer-events: none` rather than `display: none`, so the
+   transition has something to animate between. `invisible` would remove it
+   from the tab order instantly, which is the other half of what is wanted:
+   an off-screen control that is still focusable is a keyboard trap. */
+.float-btn--hidden {
+  opacity: 0;
+  pointer-events: none;
+  visibility: hidden;
+}
+
+/* On a phone the two 56px controls plus a 1rem gap is 128px of the bottom-right
+   corner, which overlaps the content a thumb is holding. They shrink to 48px
+   and move in slightly; the hit area is still comfortably above the 44px
+   guidance, and the offset keeps them clear of the home indicator. */
+@media (max-width: 640px) {
+  .float-stack {
+    right: 1rem;
+    bottom: 1rem;
+    gap: 0.75rem;
+  }
+
+  .float-btn {
+    height: 3rem;
+    width: 3rem;
+  }
+}
+
+/* An open accordion trigger, on its orange fill.
+
+   The trigger turns orange when open (`[data-state=open]:bg-accent`), which
+   creates two problems at once, and both are visible on any open row.
+
+   First, the ink. The title, role and period inside kept
+   `text-muted-foreground`, a colour chosen for text on a *pale* background.
+   On orange it measured 2.96:1 in light mode and 1.15:1 in dark.
+
+   The rule below restores the hierarchy for the secondary text only. An
+   earlier version used a bare descendant selector, which also caught the
+   title, because the title inherits the trigger's colour and the sweep could
+   not tell the two apart by class alone. At `foreground/75` the title landed
+   at 3.62:1 on the darkened orange, a fail that looked like a fill problem
+   and was really an over-broad selector. So the muted class is named
+   explicitly and the title is left alone: it already resolves to the
+   trigger's own foreground, which is 5.16:1 against this fill.
+
+   Second, and the larger half: in dark mode the fill itself was wrong. The
+   trigger reaches orange through the arbitrary variant
+   `[&[data-state=open]]:bg-accent`, which resolves to the `--accent` token,
+   and that token stays bright orange in dark mode. Every other saturated
+   surface on the page was re-pointed at a darker value for exactly this
+   reason, so the open trigger was the one place left holding full lightness.
+   Near-white title text on bright orange measured 2.04:1.
+
+   The fill rule below deliberately does not list `.bg-accent` as a compound.
+   The class is not on the element: the arbitrary variant compiles to
+   `[data-state=open] .bg-accent`-shaped matching against a class the trigger
+   never receives, so requiring it matches nothing and the rule silently does
+   nothing. Matching the state and the ancestor is what actually reaches the
+   open trigger. That cost one round trip to find out.
+
+   The fill is re-pointed to the same darkened orange the Skills section and
+   the CTA card use, 34% lightness, which is 5.16:1 against off-white text.
+   One value, matching `.dark .band-accent`, so the open row cannot drift away
+   from the rest of the palette again.
+
+   Found while checking a new row of experience data, but every part of this
+   predates it: it is a property of the trigger's open state, not of any one
+   entry.
+
+   The ink fix is on the trigger itself, not on the title. The title carries
+   no colour class of its own, it inherits, so correcting it meant either an
+   explicit rule on a class it does not have, or setting the inherited colour
+   at the source. The source is simpler and catches everything inside the
+   trigger at once.
+
+   That source rule is `color`, not `background-color`, and the two ink levels
+   inside an open trigger are then expressed relative to it:
+
+     - the trigger sets the theme foreground, 7.9:1 on the light-mode orange
+       and 5.16:1 on the dark-mode one
+     - the secondary text takes 90% of that, which clears 4.5:1 on both
+
+   Getting here took several attempts, and the useful thing to record is where
+   each one went wrong, because each read as a different bug:
+
+   Targeting only `.text-muted-foreground` changed nothing visible for the
+   title, because the title has no class of its own to target and a rule
+   cannot reach an element it cannot name.
+
+   Widening to a bare descendant selector appeared to fix the title and break
+   something else, which sent this down a wrong path for two rounds. The
+   title's *wrapper* span carries `text-muted-foreground` and contains the
+   title, so a descendant match reduces the colour at the wrapper and the
+   title inherits the reduced value through it. A `>` combinator was added to
+   avoid that and changed nothing, because the wrapper is a direct child of
+   the trigger and the muted class is genuinely on it.
+
+   The alpha was the other blind spot. The sweep read `color` as an RGB triple
+   without compositing its alpha, so `/0.75` and `/1` were indistinguishable
+   and every figure quoted for the secondary text was the ratio for
+   full-strength text. The sweep now composites; the numbers above are
+   post-fix and were re-measured after that change.
+
+   The base ink is `--foreground`, not `--background`. The open trigger is
+   orange in *both* modes, so the ink that works on it is the one that
+   contrasts with a saturated fill, and that is the near-black / off-white
+   pair the theme already flips between modes. Measured: 7.9:1 in light mode
+   against the bright orange, 5.16:1 in dark against the darkened one.
+
+   `--background` is the wrong token and fails in both directions: it is
+   near-black in dark mode, 3.19:1 on the fill, and near-white in light mode,
+   2.04:1. It reads as "the page's own ink" and it is nothing of the sort on
+   a fill that is neither the page nor a card. That inversion is the whole
+   reason the last few rounds of this fix did nothing visible: the rule was
+   applied, matched, and computed to exactly the colour that was already
+   failing.
+
+   One rule covers both modes because the token does. The fill needs two
+   values, since bright orange in light mode and a darkened orange in dark
+   mode are not the same surface, but the ink does not: the theme's
+   foreground is already the right weight on each. */
+#experience button[data-state="open"] {
+  color: hsl(var(--foreground));
+}
+
+.dark #experience button[data-state="open"] {
+  background-color: hsl(28 90% 34%);
+}
+
+/* The secondary level inside an open trigger.
+
+   90%, not 75%. The muted weight that works on a pale band is too light for a
+   saturated fill, because translucency costs far more contrast against a
+   colour with no headroom than against a near-white one. 75% measured 3.62:1
+   here; 90% clears 4.5:1.
+
+   The selector is a plain descendant on purpose. The title's wrapper span
+   carries `text-muted-foreground` and contains the title, so a child-only
+   selector would leave the wrapper on the base ink and let the title inherit
+   the wrong one. The hierarchy is base-plus-override rather than two sibling
+   rules for that reason. */
+#experience button[data-state="open"] .text-muted-foreground {
+  color: hsl(var(--foreground) / 0.9);
+}
+
+/* --- Type helpers ------------------------------------------------------- */
+
+.display {
+  font-family: var(--font-display);
+}
+
+/* The hero headline. `clamp` rather than a step so the value still fits on a
+   320px phone instead of overflowing its card. */
+.display-xl {
+  font-family: var(--font-display);
+  font-size: clamp(2.25rem, 8.5vw, 5.5rem);
+  font-weight: 700;
+  line-height: 0.95;
+  letter-spacing: -0.03em;
+  text-transform: uppercase;
+}
+
+/* Big number in the stats grid, same reasoning as .display-xl. */
+.stat-value {
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 5.5vw, 3.25rem);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.02em;
 }

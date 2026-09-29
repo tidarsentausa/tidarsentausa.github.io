@@ -3,19 +3,32 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/png" href="/tidar-avatar.jpg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Space+Grotesk:wght@500;700&display=swap"
+    />
     <title>Tidar Sentausa | SEO Manager</title>
     <meta
       name="description"
       content="Tidar Sentausa, SEO Manager and Digital Project Manager in Kuala Lumpur. Ten years turning search traffic into pipeline for Samsung, LegalBison, and more."
     />
+    <meta property="og:title" content="Tidar Sentausa | SEO Manager" />
+    <meta
+      property="og:description"
+      content="SEO Manager and Digital Project Manager. Ten years turning search traffic into pipeline for Samsung, LegalBison, and more."
+    />
+    <meta property="og:type" content="profile" />
     <script>
       /* Apply the stored theme BEFORE the first paint.
 
-         React cannot do this. The hook in src/theme.ts sets data-theme from an
-         effect, which runs after the browser has already painted the document
-         — and this page is a cream paper design, so a returning dark-mode
-         visitor would get a full frame of light before it corrected. That reads
-         as a bug, not a theme.
+         React cannot do this. The toggle lives in a component, so it runs after
+         the browser has already painted the document — and a returning dark-mode
+         visitor would get a full frame of light before it corrected. On a
+         single-page site that first frame is most of what they see before the
+         bundle lands, so the correction is not instant enough to hide it.
 
          So the attribute is set here, inline and synchronous, in the head. The
          stylesheet is already in place by the time this runs, so the very first
@@ -27,15 +40,22 @@
          abort the rest of the head.
 
          On no stored value the attribute is left OFF, which renders light: the
-         light palette lives in :root rather than in [data-theme="light"], so
-         it needs no attribute at all. The key is the same string as THEME_KEY
-         in src/theme.ts; it is duplicated rather than shared because this has
-         to be inline and cannot import. */
+         light palette lives in :root rather than in .dark, so it needs no
+         attribute at all. The key is the same string as STORAGE_KEY in
+         src/sections/FloatingControls.tsx; it is duplicated rather than shared
+         because this has to be inline and cannot import.
+
+         Only the class is toggled here — `.dark` is what the theme's selectors
+         match. `data-theme` is set as well so the React side has a queryable
+         handle on the same state, and the two are always written together. */
       (function () {
         try {
           var stored = window.localStorage.getItem("tidar-theme");
           if (stored === "light" || stored === "dark") {
             document.documentElement.dataset.theme = stored;
+            if (stored === "dark") {
+              document.documentElement.classList.add("dark");
+            }
           }
         } catch (e) {
           /* No storage available; light is the fallback and needs nothing. */
