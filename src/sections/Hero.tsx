@@ -13,14 +13,27 @@ import { useCountUp } from "../useCountUp";
    intersection observer rather than just running on mount. */
 function Stat({
   value,
-  suffix,
+  prefix = "",
+  suffix = "",
+  decimals = 0,
   label,
+  detail,
 }: {
   value: number;
-  suffix: string;
+  prefix?: string;
+  suffix?: string;
+  decimals?: number;
   label: string;
+  detail?: string;
 }) {
-  const { ref, value: shown } = useCountUp(value);
+  const { ref, value: shown } = useCountUp(value, 1400, decimals);
+
+  // Fixed fraction digits so 7.9 counts as 0.0 → 7.9 without flickering
+  // between "8" and "7.9" on the last frames; integers are unaffected.
+  const formatted = shown.toLocaleString("en-US", {
+    minimumFractionDigits: decimals,
+    maximumFractionDigits: decimals,
+  });
 
   return (
     /* `bk-lift` is the page's one hover, same as the buttons and contact
@@ -30,16 +43,21 @@ function Stat({
        cursor or gain a focus ring. */
     <div className="bk-lift border-3 border-foreground bg-card p-5 shadow-[4px_4px_0px_hsl(var(--shadow-color))]">
       {/* The label is the accessible name for the number; without it a screen
-          reader would announce "10,000" with nothing to attach it to. */}
-      <dt className="sr-only">{label}</dt>
+          reader would announce "10,000" with nothing to attach it to. The
+          detail joins it so context ("Q3 2026") is announced, not dropped. */}
+      <dt className="sr-only">
+        {label}
+        {detail ? `. ${detail}` : ""}
+      </dt>
       <dd>
         <span ref={ref} className="stat-value block">
           {/* Deliberately not aria-live: this text changes ~60 times a second
               and announcing each change would flood a screen reader. The final
               value is what carries information, and it lands as plain text. */}
-          {shown.toLocaleString("en-US")}
+          {prefix}
+          {formatted}
           <span className="text-primary" aria-hidden="true">
-            {suffix}
+            {suffix ? ` ${suffix}` : ""}
           </span>
         </span>
         {/* Visible restatement of the sr-only label above, so it is decorative. */}
@@ -49,6 +67,14 @@ function Stat({
         >
           {label}
         </span>
+        {/* The denominator: property, period, baseline. Normal case and a
+            step smaller than the label so the hierarchy reads number →
+            what → where/when, without competing with the label. */}
+        {detail && (
+          <span aria-hidden="true" className="mt-1 block text-xs text-muted-foreground">
+            {detail}
+          </span>
+        )}
       </dd>
     </div>
   );
@@ -223,8 +249,9 @@ export default function Hero() {
           </Avatar>
         </div>
 
-        {/* The headline numbers, kept in the hero because they are the
-            summary — the rest of the page is the evidence. */}
+        {/* The headline proof points, kept in the hero because they are the
+            summary — the rest of the page is the evidence. Each carries its
+            own denominator so the number reads as a claim with context. */}
         <dl className="mt-14 grid grid-cols-2 gap-4 lg:grid-cols-4">
           {stats.map((s) => (
             <Stat key={s.label} {...s} />

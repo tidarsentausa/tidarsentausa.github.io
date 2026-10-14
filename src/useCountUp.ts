@@ -18,7 +18,11 @@ import { useEffect, useRef, useState } from "react";
 
    The rAF loop cancels itself on unmount and on a second trigger, so a fast
    scroll past several stats does not leave several loops running. */
-export function useCountUp(target: number, durationMs = 1400) {
+export function useCountUp(
+  target: number,
+  durationMs = 1400,
+  decimals = 0,
+) {
   const ref = useRef<HTMLSpanElement>(null);
   // Starts at the target, not at zero. The count-up is an enhancement layered
   // on top of a number that must already be correct: if the observer never
@@ -52,8 +56,11 @@ export function useCountUp(target: number, durationMs = 1400) {
           const elapsed = now - start;
           // Linear ramp, not eased: an eased count makes the last digits crawl
           // and then snap, which reads as a glitch rather than a finish.
+          // Rounded to `decimals` so fractional targets (7.9K) count cleanly
+          // instead of snapping from integers at the end.
           const progress = Math.min(1, elapsed / durationMs);
-          setValue(Math.round(target * progress));
+          const factor = 10 ** decimals;
+          setValue(Math.round(target * progress * factor) / factor);
 
           if (progress < 1) {
             frame = requestAnimationFrame(tick);
@@ -71,7 +78,7 @@ export function useCountUp(target: number, durationMs = 1400) {
       observer.disconnect();
       cancelAnimationFrame(frame);
     };
-  }, [target, durationMs]);
+  }, [target, durationMs, decimals]);
 
   return { ref, value };
 }

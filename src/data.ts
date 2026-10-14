@@ -23,12 +23,34 @@ export const profile = {
     "Results-driven SEO Manager with 10+ years of experience transforming digital presence for global brands including Samsung and LegalBison. Specialized in organic search optimization, content strategy, and cross-functional project management with a proven track record of delivering 150%+ lead growth and tripling website traffic through data-driven SEO initiatives.",
 } as const;
 
-/** Headline numbers, each traceable to a bullet in the source resume. */
+/** Headline proof points, each traceable to a bullet in the roles below.
+ *
+ *  Two outcomes, one scope, one craft — not four volumes. Every entry carries
+ *  a `detail` with the denominator (property, period, baseline) so the number
+ *  is a claim with context rather than a raw figure. `decimals` drives the
+ *  count-up precision in useCountUp; `prefix` renders ahead of the value. */
 export const stats = [
-  { value: 10, suffix: "+", label: "Years in search" },
-  { value: 2600, suffix: "K", label: "Impressions added" },
-  { value: 1595, suffix: "%", label: "Click growth" },
-  { value: 230, suffix: "K", label: "Monthly visits" },
+  {
+    value: 29,
+    prefix: "+",
+    suffix: "% QoQ",
+    label: "Organic traffic recovery",
+    detail: "LegalBison · Q3 2026",
+  },
+  {
+    value: 7.9,
+    decimals: 1,
+    suffix: "K",
+    label: "Top-3 keywords",
+    detail: "From 3.5K · position 23.7 → 16.6",
+  },
+  { value: 4, label: "APAC markets", detail: "ID · MY · SG · PH regional SEO" },
+  {
+    value: 150,
+    suffix: "%",
+    label: "Of B2B lead KPI",
+    detail: "Samsung Indonesia · Aug 2024",
+  },
 ] as const;
 
 /**
