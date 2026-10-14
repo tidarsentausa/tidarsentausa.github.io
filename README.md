@@ -6,33 +6,39 @@ Kuala Lumpur, Malaysia · [LinkedIn](https://linkedin.com/in/tidar-sentausa) ·
 
 ---
 
-I lead SEO at **LegalBison**, a legal tech platform, where I own organic search
-end to end — strategy, technical audits, content, and the reporting that proves
-whether any of it worked. Ten years in search, across B2B and B2C, mostly
-inside Samsung's orbit: Cheil Worldwide on regional SEO, then Samsung Indonesia
-in a B2B digital project management seat.
+I am Tidar Sentausa. I work in Kuala Lumpur, Malaysia. I am an SEO Manager.
+I am also a Digital Project Manager and an SEO Strategist.
 
-Alongside that I run **UrbanIdea ID** and **Essential Gear ID**, Indonesian
-commerce and media properties, and consult freelance on SEO strategy.
+I lead SEO at **LegalBison**. LegalBison is a legal tech platform.
+I manage organic search. This includes strategy, technical audits, and content.
+This also includes reporting. Reporting shows if the work is effective.
+I have ten years of experience in search. I have worked in B2B and in B2C.
+I worked at Cheil Worldwide on regional SEO.
+I worked at Samsung Indonesia in B2B digital project management.
 
-## What I actually do
+I also operate **UrbanIdea ID** and **Essential Gear ID**.
+These are Indonesian commerce and media properties.
+I also work as a freelance SEO strategy consultant.
 
-**SEO and content strategy.** Keyword research, technical and on-page audits,
-content architecture, and link building — with the judgement to know which of
-those a stalled site actually needs.
+## What I Do
 
-**Project management.** The part of the job that isn't SEO. Stakeholder
-management across marketing, product, and engineering, workflow design, and
-shipping campaigns that other people depend on.
+**SEO and content strategy.** I do keyword research. I do technical audits.
+I do on-page audits. I design content architecture. I build links.
+I identify the action that a stalled site needs.
 
-**Analytics and reporting.** GA4, Search Console, Data Studio, Tag Manager,
-Clarity. If a dashboard doesn't change a decision, it isn't worth building.
+**Project management.** I manage stakeholders. Stakeholders are in marketing,
+product, and engineering. I design workflows. I deliver campaigns.
+Other persons depend on these campaigns.
 
-**AI-assisted tooling.** The newer thread. I build LLM-driven pipelines that
-turn raw search data into answers — a browser-agent workflow that automates
-Search Console extraction, a GSC analysis pipeline that surfaces query- and
-page-level uplift, and rapid prototyping with AI coding agents and MCP. The
-aim is to remove the reporting drag that eats the week.
+**Analytics and reporting.** I use GA4. I use Search Console. I use Data
+Studio. I use Tag Manager. I use Clarity. A dashboard must support a decision.
+If it does not support a decision, do not build it.
+
+**AI-assisted tooling.** I build LLM-driven pipelines. These pipelines change
+raw search data into answers. I use a browser-agent workflow. It automates
+Search Console extraction. I use a GSC analysis pipeline. It shows uplift at
+query level and at page level. I also prototype with AI coding agents and MCP.
+The objective is to remove reporting work. Reporting work uses much time.
 
 ## Tools
 
@@ -59,41 +65,53 @@ Indonesian (native), English (fluent).
 
 ---
 
-## About this site
+## About This Site
 
-This is my résumé, built to be read rather than skimmed. Static React and Vite,
-styled in a neobrutalist system — sharp corners, hard borders, offset shadows.
+This site is my résumé. It uses static React and Vite.
+It uses a neobrutalist system. The system has sharp corners.
+It has hard borders. It has offset shadows.
 
-All copy and content live in [`src/data.ts`](src/data.ts) — that's the file to
-edit for anything you'd read on the page. The page itself is assembled in
-[`App.tsx`](src/App.tsx) from one component per section, in `src/sections/`.
+All text and content are in [`src/data.ts`](src/data.ts).
+To change text on the page, edit that file.
+The page structure is in [`App.tsx`](src/App.tsx).
+Each section is one component in `src/sections/`.
 
-### The UI layer
+### The UI Layer
 
-Styling comes from [**BoldKit**](https://github.com/ANIBIT14/boldkit), a
-neubrutalism component library built on shadcn/ui. Its components are vendored
-as source, not installed from npm — each file under `src/ui/` came from
-`https://boldkit.dev/r/<name>.json` and is updated by re-fetching that URL.
-That is deliberate: shadcn components are meant to be owned and edited, not
-pinned in `node_modules`.
+The styling uses [**BoldKit**](https://github.com/ANIBIT14/boldkit).
+BoldKit is a neubrutalism component library. It is built on shadcn/ui.
+Its components are vendored as source. They are not installed from npm.
+Each file in `src/ui/` comes from `https://boldkit.dev/r/<name>.json`.
+To update a file, fetch that URL again.
+This is intentional. You must own and edit shadcn components.
+Do not pin them in `node_modules`.
 
-- `src/styles/globals.css` — the BoldKit theme (HSL tokens, motion system).
-  Re-fetch with `curl https://boldkit.dev/r/styles.json` if you want to upgrade.
-- `src/styles/motion.css` — the animation keyframes the theme references.
-- `src/lib/utils.ts` — the `cn()` class helper the components import.
-- `src/app.css` — page structure only. It deliberately overrides no BoldKit
-  token; section rhythm, the marquee rail, and the display type live there.
+- `src/styles/globals.css` — the BoldKit theme. It contains the HSL tokens
+  and the motion system. To upgrade, re-fetch with
+  `curl https://boldkit.dev/r/styles.json`.
+- `src/styles/motion.css` — the animation keyframes. The theme refers to
+  these keyframes.
+- `src/lib/utils.ts` — the `cn()` class helper. The components import it.
+- `src/app.css` — the page structure only. It overrides no BoldKit token.
+  Section rhythm, the marquee rail, and the display type are in this file.
 
-To add a BoldKit component, drop the registry JSON into the repo root and copy
-its files into `src/ui/`:
+To add a BoldKit component, do these steps:
+
+1. Download the registry JSON into the repo root.
+2. Copy its files into `src/ui/`.
 
 ```bash
 curl -sSL https://boldkit.dev/r/<component>.json -o tmp.json
 # then move the `files[].content` entries from tmp.json into src/ui/
 ```
 
-The `@/` alias that those components import through is set in both
-`vite.config.ts` and `tsconfig.json`.
+The `@/` alias is set in two files: `vite.config.ts` and `tsconfig.json`.
+The components import through this alias.
+
+To run the site, do these steps:
+
+1. Install the dependencies.
+2. Start the local dev server, or build the site, or preview the build.
 
 ```bash
 npm install
@@ -105,19 +123,23 @@ npm run preview   # serve the build locally
 Pushes to `main` deploy to GitHub Pages.
 
 Most tool logos load as SVGs from the simple-icons CDN. Ahrefs, Screaming Frog,
-and Microsoft Clarity are not in simple-icons, so they are self-hosted in
-`public/`; if the CDN changes, the rest will 404 silently. `Moz` resolves to
-the Mozilla mark, as simple-icons has no Moz entry.
+and Microsoft Clarity are not in simple-icons. Therefore they are self-hosted
+in `public/`. If the CDN changes, the other logos will return 404 without a
+message. `Moz` resolves to the Mozilla mark. Simple-icons has no Moz entry.
 
-The three self-hosted marks are black-on-transparent, converted from the
-official colour artwork by [`tools/monochrome-icons.py`](tools/monochrome-icons.py)
-so they match the CDN glyphs instead of reading as two coloured errors. To
-rebuild them from a fresh download:
+The three self-hosted marks are black-on-transparent. They were converted from
+the official colour artwork by
+[`tools/monochrome-icons.py`](tools/monochrome-icons.py).
+The conversion makes them match the CDN glyphs.
+To rebuild them from a new download, do these steps:
+
+1. Restore the committed originals.
+2. Run the script.
 
 ```bash
 git checkout -- public/clarity.png public/sf-favicon.png   # undo a previous run
 python tools/monochrome-icons.py
 ```
 
-The script is not idempotent — it reads luminance, and an already-black image
-has none — so always start from the committed originals.
+The script is not idempotent. It reads luminance. An image that is already
+black has no luminance. Therefore always start from the committed originals.
