@@ -1,3 +1,4 @@
+import { useState } from "react";
 import Contact from "./sections/Contact";
 import Experience from "./sections/Experience";
 import FloatingControls from "./sections/FloatingControls";
@@ -34,6 +35,8 @@ const NAV = [
 ] as const;
 
 export default function App() {
+  const [menuOpen, setMenuOpen] = useState(false);
+
   return (
     <div id="top" className="min-h-screen bg-background">
       <a
@@ -66,29 +69,18 @@ export default function App() {
          "does this fill need inverting", and orange does not. */}
       <header className="band-accent sticky top-0 z-40 border-b-3 border-foreground">
         <div className="shell flex items-center py-2.5">
-          {/* The nav was a wrapping flex list, which put five links into two
-              rows below md and pushed the sticky header to 111px — nearly
-              double its height, eating a tenth of a phone screen and making
-              the header feel like a menu rather than a bar.
-
-              It is a horizontally scrollable single row instead. That is the
-              standard mobile-nav answer and the reason it works here: the rows
-              stay one line tall whatever the width, so the header keeps a
-              fixed 56px. What scrolls is the link row, and the fade masks on
-              either side signal there is more to the right, which a wrapped
-              row has no way of saying.
-
-              `scrollbar-width: none` plus the webkit pseudo-element hide the
-              scrollbar itself, which would otherwise add ~12px of height on
-              Windows and undo the whole point. Scrolling still works; only the
-              indicator is hidden.
-
-              The list is right-aligned on desktop as before — `ml-auto` plus
-              `justify-end` does both, since the flex parent no longer has a
-              sibling to push against. */}
+          <a
+            href="#top"
+            className="text-sm font-bold uppercase tracking-wide underline-offset-4 hover:underline md:hidden"
+          >
+            Tidar Sentausa
+          </a>
+          {/* Desktop nav: horizontal row, right-aligned. Hidden below md,
+              where the hamburger takes over so the sticky bar stays one line
+              tall instead of wrapping to 111px. */}
           <nav
             aria-label="Sections"
-            className="ml-auto min-w-0 overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+            className="ml-auto hidden min-w-0 overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] md:block [&::-webkit-scrollbar]:hidden"
           >
             <ul className="flex items-center gap-5 whitespace-nowrap">
               {NAV.map(({ href, label }) => (
@@ -107,7 +99,48 @@ export default function App() {
               ))}
             </ul>
           </nav>
+          {/* Mobile hamburger: a classic three-stripe icon in a bordered
+              square, matching the neubrutalist buttons. Three plain spans
+              rather than a lucide icon so the glyph is exactly three bars
+              whatever the icon set ships. Toggles the dropdown below. */}
+          <button
+            type="button"
+            aria-expanded={menuOpen}
+            aria-controls="mobile-nav"
+            aria-label={menuOpen ? "Close menu" : "Open menu"}
+            onClick={() => setMenuOpen((open) => !open)}
+            className="ml-auto flex h-11 w-11 flex-col items-center justify-center gap-[5px] border-3 border-foreground bg-background text-foreground shadow-[4px_4px_0px_hsl(var(--shadow-color))] transition-transform duration-200 ease-out active:translate-x-[4px] active:translate-y-[4px] active:shadow-none md:hidden"
+          >
+            <span aria-hidden="true" className="block h-[3px] w-6 bg-current" />
+            <span aria-hidden="true" className="block h-[3px] w-6 bg-current" />
+            <span aria-hidden="true" className="block h-[3px] w-6 bg-current" />
+          </button>
         </div>
+        {/* Mobile dropdown panel. Absolute so opening it never grows the
+            sticky bar itself; bordered top + hard shadow to read as part of
+            the header. `md:hidden` so a resized-open menu can't linger on
+            desktop. Links close the menu on activation. */}
+        {menuOpen && (
+          <nav
+            id="mobile-nav"
+            aria-label="Sections"
+            className="absolute inset-x-0 top-full border-b-3 border-foreground bg-background text-foreground shadow-[0_4px_0_0_hsl(var(--shadow-color))] md:hidden"
+          >
+            <ul className="shell flex flex-col py-2">
+              {NAV.map(({ href, label }) => (
+                <li key={href} className="border-b-2 border-foreground/10 last:border-b-0">
+                  <a
+                    href={href}
+                    onClick={() => setMenuOpen(false)}
+                    className="block py-3 text-base font-bold uppercase tracking-wide underline-offset-4 hover:underline"
+                  >
+                    {label}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </nav>
+        )}
       </header>
 
       <main id="main">

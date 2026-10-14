@@ -61,7 +61,7 @@ export const roles: Role[] = [
     period: "Dec 2025 - Present",
     location: "Kuala Lumpur, Malaysia",
     blurb:
-      "Corporate service provider specializing in FinTech, Web3, and cryptocurrency legal licensing, company formation, and regulatory structuring across global markets. Leading SEO strategy and execution to position LegalBison as the trusted authority in FinTech/crypto regulatory compliance and corporate services.",
+      "Corporate service provider specializing in FinTech, Web3, and digital assets legal licensing, company formation, and regulatory structuring across global markets. Leading SEO strategy and execution to position LegalBison as the trusted authority in FinTech/digital assets regulatory compliance and corporate services.",
     url: "https://legalbison.com",
     highlights: [
       "Prototype AI/automation tooling (LLM + agent workflows) to speed up GSC analysis, reporting, and content ops",
