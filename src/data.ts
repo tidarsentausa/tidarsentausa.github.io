@@ -33,8 +33,8 @@ export const stats = [
   {
     value: 29,
     prefix: "+",
-    suffix: "% QoQ",
-    label: "Organic traffic recovery",
+    suffix: "%",
+    label: "QoQ traffic recovery",
     detail: "LegalBison · Q3 2026",
   },
   {
