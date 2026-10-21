@@ -20,7 +20,7 @@ export const profile = {
   site: "https://urbanidea.id",
   linkedin: "https://www.linkedin.com/in/tidar-sentausa/",
   summary:
-    "Results-driven SEO Manager with 10+ years of experience transforming digital presence for global brands including Samsung and LegalBison. Specialized in organic search optimization, content strategy, and cross-functional project management with a proven track record of delivering 150%+ lead growth and tripling website traffic through data-driven SEO initiatives.",
+    "Results-driven SEO Manager with 10+ years of experience transforming digital presence for global brands including Samsung and a global corporate service provider. Specialized in organic search optimization, content strategy, and cross-functional project management with a proven track record of delivering 150%+ lead growth and tripling website traffic through data-driven SEO initiatives.",
 } as const;
 
 /** Headline proof points, each traceable to a bullet in the roles below.
@@ -35,7 +35,7 @@ export const stats = [
     prefix: "+",
     suffix: "%",
     label: "QoQ traffic recovery",
-    detail: "LegalBison · Q3 2026",
+    detail: "Global Corporate Service Provider · Q3 2026",
   },
   {
     value: 7.9,
@@ -78,13 +78,12 @@ export const tools = [
 
 export const roles: Role[] = [
   {
-    company: "LegalBison.com",
+    company: "Global Corporate Service Provider",
     title: "Search Engine Optimization Manager",
     period: "Dec 2025 - Present",
     location: "Kuala Lumpur, Malaysia",
     blurb:
-      "Corporate service provider specializing in FinTech, Web3, and digital assets legal licensing, company formation, and regulatory structuring across global markets. Leading SEO strategy and execution to position LegalBison as the trusted authority in FinTech/digital assets regulatory compliance and corporate services.",
-    url: "https://legalbison.com",
+      "Corporate service provider specializing in FinTech, Web3, and digital assets legal licensing, company formation, and regulatory structuring across global markets. Leading SEO strategy and execution to position the company as the trusted authority in FinTech/digital assets regulatory compliance and corporate services.",
     highlights: [
       "Prototype AI/automation tooling (LLM + agent workflows) to speed up GSC analysis, reporting, and content ops",
       "Scaled the organic content portfolio from 281 to 789 ranking pages - 515 new pages adding 5,900+ clicks and 2.6M impressions, expanding the ranked-keyword footprint 52% (22.7K to 34.5K queries)",
