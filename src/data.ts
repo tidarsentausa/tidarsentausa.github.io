@@ -97,7 +97,7 @@ export const roles: Role[] = [
     company: "Self-Employed",
     title: "SEO Strategy Consultant (Freelance)",
     period: "Jan 2025 - Present",
-    location: "Jakarta, Indonesia",
+    location: "Kuala Lumpur, Malaysia (remote)",
     blurb:
       "Expand brand presence from branded terms to high-intent generic keywords in competitive lifestyle market.",
     highlights: [
