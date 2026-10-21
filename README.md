@@ -9,7 +9,8 @@ Kuala Lumpur, Malaysia · [LinkedIn](https://linkedin.com/in/tidar-sentausa) ·
 I am Tidar Sentausa. I work in Kuala Lumpur, Malaysia. I am an SEO Manager.
 I am also a Digital Project Manager and an SEO Strategist.
 
-I lead SEO at **LegalBison**. LegalBison is a legal tech platform.
+I lead SEO at a **global corporate service provider**. The company provides
+corporate services for FinTech and digital assets.
 I manage organic search. This includes strategy, technical audits, and content.
 This also includes reporting. Reporting shows if the work is effective.
 I have ten years of experience in search. I have worked in B2B and in B2C.
@@ -50,7 +51,7 @@ Similarweb
 
 | | | |
 |---|---|---|
-| **Dec 2025 –** | LegalBison.com | SEO Manager |
+| **Dec 2025 –** | Global corporate service provider | SEO Manager |
 | **Jan 2025 –** | Self-Employed | SEO Strategy Consultant |
 | **Jan 2024 – Dec 2024** | Samsung Indonesia | B2B Digital Project Manager |
 | **Dec 2021 – Aug 2024** | Cheil Worldwide (Samsung B2C) | Regional SEO Analyst |
