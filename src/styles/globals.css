@@ -241,7 +241,10 @@
   --input: 5 14% 97%;
   --ring: 5 14% 97%;
 
-  --shadow-color: 0 0% 0%;
+  /* Match the dark-mode shadow already on the floating controls, which draw in
+     --foreground. A pure-black shadow vanishes against a 10% background; this
+     near-white edge stays visible on every raised surface. */
+  --shadow-color: 5 14% 97%;
 
   /* Neon and clash colours, nudged for a dark ground. Unused by anything on
      this page — they are here so the theme's glow utilities resolve. */
